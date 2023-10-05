@@ -1,12 +1,30 @@
 #include "baseModel.H"
 #include "addToRunTimeSelectionTable.H"
 
+
 namespace Foam {
 
 namespace mff {
 
 defineTypeNameAndDebug(baseModel, 0);
 defineRunTimeSelectionTable(baseModel, dictionary);
+
+defineSchemaTable(baseModel);
+
+void baseModel::constructSchemaTables() {
+    static bool constructed = false;
+    if (!constructed) {
+        constructed = true;
+        baseModel::schemasPtr_ = new baseModel::schemaTable;
+    }
+}
+
+void baseModel::destroySchemaTables() {
+    if (baseModel::schemasPtr_) {
+        delete baseModel::schemasPtr_;
+        baseModel::schemasPtr_ = nullptr;
+    }
+}
 
 baseModel::baseModel
 (

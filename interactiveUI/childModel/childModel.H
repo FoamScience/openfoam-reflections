@@ -20,6 +20,8 @@ protected:
 
     /// Nothing here, so remove this section
     word type_;
+
+    autoPtr<baseModel>  subModel_;
  
 public:
 
@@ -45,7 +47,8 @@ public:
 REFL_AUTO
 (
     type(Foam::mff::childModel, bases<Foam::mff::baseModel>),
-    field(type_)
+    field(type_),
+    field(subModel_)
 )
 
 #endif

@@ -3,9 +3,12 @@
 
 #include "IOdictionary.H"
 #include "autoPtr.H"
+#include "error.H"
 #include "runTimeSelectionTables.H"
-#include "refl.H"
+#include "uiBuilder.H"
+#include "uiConcepts.H"
 #include "vector.H"
+#include "reflectionSchemaTable.H"
 
 namespace Foam
 {
@@ -22,6 +25,8 @@ protected:
     /// Configuration dictionary
     const dictionary& dict_;
 
+    autoPtr<word> key_;
+
     /// Label
     label m_;
 
@@ -33,7 +38,7 @@ public:
     /// Runtime type name
     TypeName("baseModel");
 
-    /// @brief RunTime selection table for baseModeles
+    /// @brief RunTime selection table for baseModels
     declareRunTimeSelectionTable
     (
         autoPtr,
@@ -44,6 +49,9 @@ public:
         ),
         (dict)
     );
+
+    /// @brief Schema table for baseModels
+    declareSchemaTable(baseModel, schemaFromUser, dictionary);
 
     /// Construct from dictionary
     explicit baseModel
@@ -76,6 +84,22 @@ public:
         const dictionary& dict
     );
 
+    /// @return a dictionary reflecting this object
+    static dictionary schema(const word& modelType) {
+        auto cstrIter = schemasPtr_->cfind(modelType);
+        dictionary dict;
+        dict.set(word(typeName+"Type"), modelType);
+
+        if (!cstrIter.found())
+        {
+            FatalErrorInFunction
+            << modelType << " was not found in schema table."
+            << exit(FatalError);
+        }
+
+        return dict + cstrIter()();
+    }
+
     /// @return the underlying dictionary
     const dictionary& dict() const;
 
@@ -95,6 +119,7 @@ public:
 REFL_AUTO
 (
     type(Foam::mff::baseModel),
+    field(key_),
     field(m_),
     field(vv_)
 )

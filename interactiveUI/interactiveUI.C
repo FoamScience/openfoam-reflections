@@ -3,63 +3,46 @@
 #include "uiConcepts.H"
 #include "uiBuilder.H"
 #include "baseModel.H"
-#include "childModel.H"
+#include <string>
 #include <type_traits>
 
 using namespace Foam;
 
-template<class T>
+template<class T, class B = T>
 static dictionary reflectAndBuildDictionary() {
     dictionary dict;
     using pureName = std::remove_cvref_t<T>;
+    using pureBName = std::remove_cvref_t<B>;
     constexpr auto type = refl::reflect<pureName>();
-    constexpr bool isRTSManagedModel = ui::DictionaryRTSModel<pureName>;
+    constexpr bool isRTSManagedBase = ui::DictionaryRTSModelBase<pureName>;
+    constexpr bool isRTSManagedImpl = ui::DictionaryRTSModelImpl<pureName, pureBName>;
     constexpr bool isAbstractModel = std::is_abstract_v<pureName>;
-    Info << "Filling dictionary for " << word(type.name.str()) << endl;
-    Info << "---- (RTSManaged? -> " << isRTSManagedModel <<  " )" << endl;
-    Info << "---- (IsAbstract? -> " << std::is_abstract_v<pureName> <<  " )" << endl;
-    if (isRTSManagedModel && isAbstractModel) 
-    {
-        word concrete;
-        Info << "Pick a model from: " << pureName::dictionaryConstructorTablePtr_->toc() << endl;
-        std::getline(std::cin, concrete);
-        dict.set(word(pureName::typeName + "Type"), concrete);
-        // !!!Here, need to get the concrete type from a string!!!!
-        //using concreteTypeName = decltype(pureName::dictionaryConstructorTablePtr_->operator[](concrete));
-        //constexpr auto concreteType = refl::reflect<concreteTypeName>();
-        //for_each(concreteType.members, [&](auto member) {
-        //    if constexpr (refl::descriptor::is_field(member)) {
-        //        auto name = ui::builder<pureName>::demangle(typeid(typename decltype(member)::value_type).name());
-        //        bool isRTSManaged = ui::DictionaryRTSModel<typename decltype(member)::value_type>;
-        //        word inName;
-        //        Info
-        //            << " Type the value of " << word(type.name.str()) << "::"
-        //            << word(member.name.str()) << " ( a "
-        //            << ui::builder<pureName>::familiarNaming(name) << ", RTSManaged? -> " << isRTSManaged << " )" << endl;
-        //        std::getline(std::cin, inName);
-        //        dict.set(word(member.name.str()), inName);
-        //    }
-        //});
+    constexpr bool hasSchema = ui::SelfReflectableModel<pureName>;
+    Info << "Generating schema dictionary for " << word(type.name.str()) << endl;
+    Info << "---- A base for RTS models? -> " << isRTSManagedBase << endl;
+    Info << "---- An implementation for " << ui::builder<pureName>::demangle(typeid(pureName).name())
+         << " RTS models ? -> " << isRTSManagedImpl << endl;
+    Info << "---- Is abstract? -> " << isAbstractModel << endl;
+    Info << "---- Can self-reflect? -> " << hasSchema << endl;
+    if constexpr (hasSchema) {
+        dict = ui::builder<pureName>::schema();
     }
-
-    for_each(type.members, [&](auto member) {
-        if constexpr (refl::descriptor::is_field(member)) {
-            auto name = ui::builder<pureName>::demangle(typeid(typename decltype(member)::value_type).name());
-            bool isRTSManaged = ui::DictionaryRTSModel<typename decltype(member)::value_type>;
-            word inName;
-            Info
-                << " Type the value of " << word(type.name.str()) << "::"
-                << word(member.name.str()) << " ( a "
-                << ui::builder<pureName>::familiarNaming(name) << ", RTSManaged? -> " << isRTSManaged << " )" << endl;
-            std::getline(std::cin, inName);
-            dict.set(word(member.name.str()), inName);
-        }
-    });
     return dict;
 }
 
 
 int main (int argc, char *argv[]) {
-    Info << reflectAndBuildDictionary<mff::childModel>() << endl;   
+    mff::baseModel::debug = 1;
+    Info << "Choose a Model from available baseModels:" << endl;
+    Info << mff::baseModel::schemasPtr_->toc() << endl;
+    word modelType;
+    std::getline(std::cin, modelType);
+    Info << mff::baseModel::schema(modelType) << endl;
+    //Info << "--------------------------------------" << endl;
+    //Info << "The baseModel is reflected as:" << endl;
+    //Info << reflectAndBuildDictionary<mff::baseModel>() << endl;   
+    //Info << "--------------------------------------" << endl;
+    //Info << reflectAndBuildDictionary<mff::childModel, mff::baseModel>() << endl;   
+    //Info << "--------------------------------------" << endl;
     return 0;
 }

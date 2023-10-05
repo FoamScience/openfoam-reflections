@@ -1,5 +1,6 @@
-baseModel.C
-childModel.C
+baseModel/baseModel.C
+childModel/childModel.C
+anotherModel/anotherModel.C
 interactiveUI.C
 
 EXE = interactiveUI

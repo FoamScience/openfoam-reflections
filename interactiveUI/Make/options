@@ -2,7 +2,7 @@ EXE_INC = \
     -std=c++23 \
     -I$(LIB_SRC)/surfMesh/lnInclude \
     -I$(LIB_SRC)/Pstream/lnInclude \
-    -I../src/lnInclude
+    -I../src/lnInclude -I./lnInclude
 
 EXE_LIBS = \
     -lsurfMesh \
