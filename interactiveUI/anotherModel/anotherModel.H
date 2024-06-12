@@ -1,29 +1,27 @@
 #ifndef anotherModel_H
 #define anotherModel_H
 
-#include "baseModel.H"
-#include "mathematicalConstants.H"
 #include "Switch.H"
+#include "baseModel.H"
 
-namespace Foam
-{
+namespace Foam {
 
-namespace mff
-{
+namespace mff {
 
 /// @brief anotherModel description
 /// hyde-owner elwardi
-class anotherModel
-:
-    public baseModel
+class anotherModel : public baseModel
 {
-protected:
-
-    List<scalar>  scalars_;
-    Switch doUpdates_;
- 
-public:
-
+  protected:
+    ui::member<List<scalar>,
+               [] { return List<scalar>{ 5, 2 }; },
+               [] { return "scalars_ description"; }>
+      scalars_;
+    ui::member<Switch,
+               [] { return true; },
+               [] { return "doUpdates_ description"; }>
+      doUpdates_;
+  public:
     /// Runtime type name
     TypeName("anotherModel");
 
@@ -43,12 +41,9 @@ public:
 
 } // !namspace Foam
 
-REFL_AUTO
-(
-    type(Foam::mff::anotherModel, bases<Foam::mff::baseModel>),
-    field(scalars_),
-    field(doUpdates_)
-)
+REFL_AUTO(type(Foam::mff::anotherModel, bases<Foam::mff::baseModel>),
+          field(scalars_),
+          field(doUpdates_))
 
 #endif
 

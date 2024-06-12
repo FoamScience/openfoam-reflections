@@ -80,10 +80,15 @@ concept SelfReflectableModel = requires(word w) {
 /// @hyde-owner elwardi
 template<class T>
 concept SomePtr = requires (T t) {
-    //{ T::element_type };
-    //{ &T::New };
     { t.ref() };
     { t.get() };
+};
+
+template<class T>
+concept DefaultedMetadataType = requires {
+    {T::default_};
+    {T::name_};
+    {T::description_};
 };
 
 } /// !namespace ui

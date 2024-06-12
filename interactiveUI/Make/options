@@ -1,10 +1,11 @@
 EXE_INC = \
+    -Wno-old-style-cast -Wno-subobject-linkage \
     -std=c++23 \
     -I$(LIB_SRC)/surfMesh/lnInclude \
     -I$(LIB_SRC)/Pstream/lnInclude \
-    -I../src/lnInclude -I./lnInclude
+    -I../src/lnInclude -I../Crow/include -I./lnInclude
 
 EXE_LIBS = \
     -lsurfMesh \
     -L$(FOAM_USER_LIBBIN) -L$(FOAM_LIBBIN)/$(FOAM_MPI) \
-    -lPstream -lmeshfreeUI
+    -lPstream 

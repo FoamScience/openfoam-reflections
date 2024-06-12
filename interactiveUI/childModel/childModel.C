@@ -18,7 +18,9 @@ childModel::childModel
 )
 :
     baseModel(dict),
-    type_()
+    type_(),
+    vector_(),
+    subModel_()
 {
 }
 
