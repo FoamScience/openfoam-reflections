@@ -2,29 +2,31 @@
 #define childModel_H
 
 #include "baseModel.H"
-#include "mathematicalConstants.H"
+#include "uiMember.H"
 
-namespace Foam
-{
+namespace Foam {
 
-namespace mff
-{
+namespace mff {
 
 /// @brief childModel description
 /// hyde-owner elwardi
-class childModel
-:
-    public baseModel
+class childModel : public baseModel
 {
-protected:
-
+  protected:
     /// Nothing here, so remove this section
-    word type_;
+    ui::
+      member<word, [] { return "default"; }, [] { return "type_ desctiption"; }>
+        type_;
+    ui::member<vector,
+               [] { return vector{ 15, 50, 80 }; },
+               [] { return "vector_ desctiption"; }>
+      vector_;
+    ui::member<autoPtr<baseModel>,
+               [] { return nullptr; },
+               [] { return "subModel_ desctiption"; }>
+      subModel_;
 
-    autoPtr<baseModel>  subModel_;
- 
-public:
-
+  public:
     /// Runtime type name
     TypeName("childModel");
 
@@ -44,12 +46,10 @@ public:
 
 } // !namspace Foam
 
-REFL_AUTO
-(
-    type(Foam::mff::childModel, bases<Foam::mff::baseModel>),
-    field(type_),
-    field(subModel_)
-)
+REFL_AUTO(type(Foam::mff::childModel, bases<Foam::mff::baseModel>),
+          field(type_),
+          field(vector_),
+          field(subModel_))
 
 #endif
 

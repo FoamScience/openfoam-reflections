@@ -15,7 +15,8 @@ For a quick overview on how this effort started, the general goals and the curre
 - [A reflection system for MeshFreeFoam - Part 2](https://foamscience.github.io/MeshFreeFoam-Docs/blog/2023/10/02/a-reflection-system-for-meshfreefoam-part-2/).
 - [A reflection system for MeshFreeFoam - Part 3](https://foamscience.github.io/MeshFreeFoam-Docs/blog/2023/10/05/a-reflection-system-for-meshfreefoam-part-3/).
 
-There is an [interactiveUI](src/interactiveUI) application to **illustrate** basic usage of the reflection system. Also, you need C++20 for this to work (not a hard requirement but I like concepts).
+There is an [interactiveUI](src/interactiveUI) application to **illustrate** basic usage of the reflection system.
+Also, you need C++20 for this to work (not a hard requirement but I like concepts).
 
 ## Getting started
 
@@ -23,10 +24,10 @@ To compile the sample application:
 ```bash
 git clone https://github.com/FoamScience/openfoam-reflections
 cd openfoam-reflections
-wmakeLnInclude src # Needed because it's header-only
-cd interactiveUI
-wmakeLnInclude .
-wmake
+# Needs OpenFOAM to be sourced
+./build_and_run.sh # Works on Ubuntu with NodeJs v18 installed
+# in another terminal, you need to fire the interactiveUI
+./interactiveUI
 ```
 
 For the mechanism to work for you, you have to follow specific methods:

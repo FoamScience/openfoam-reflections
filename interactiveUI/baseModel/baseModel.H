@@ -4,72 +4,68 @@
 #include "IOdictionary.H"
 #include "autoPtr.H"
 #include "error.H"
+#include "reflectionSchemaTable.H"
 #include "runTimeSelectionTables.H"
 #include "uiBuilder.H"
-#include "uiConcepts.H"
+#include "uiMember.H"
 #include "vector.H"
-#include "reflectionSchemaTable.H"
 
-namespace Foam
-{
+namespace Foam {
 
-namespace mff
-{
+namespace mff {
 
 /// @brief Base class for some stuff
 /// @hyde-owner elwardi
 class baseModel
 {
-protected:
-
+  protected:
     /// Configuration dictionary
     const dictionary& dict_;
 
-    autoPtr<word> key_;
+    ui::member<autoPtr<word>,
+               []() { return autoPtr<word>(new word("key")); },
+               []() { return "key member"; }
+    > key_;
+    //autoPtr<word> key_;
 
     /// Label
-    label m_;
+    ui::member<label,
+               []() { return 12; },
+               []() { return "m coefficient"; },
+               []() { return 1; },
+               []() { return 15; }> m_;
+      // label m_;
 
-    /// Vector
-    vector vv_;
+      /// Vector
+    ui::member<vector,
+               []() { return vector(1, 2, 3); },
+               []() { return "vv vector"; }
+    > vv_;
+      //vector vv_;
 
-public:
+  public:
 
     /// Runtime type name
     TypeName("baseModel");
 
     /// @brief RunTime selection table for baseModels
-    declareRunTimeSelectionTable
-    (
-        autoPtr,
-        baseModel,
-        dictionary,
-        (
-            const dictionary& dict
-        ),
-        (dict)
-    );
+    declareRunTimeSelectionTable(autoPtr,
+                                 baseModel,
+                                 dictionary,
+                                 (const dictionary& dict),
+                                 (dict));
 
     /// @brief Schema table for baseModels
     declareSchemaTable(baseModel, schemaFromUser, dictionary);
 
     /// Construct from dictionary
-    explicit baseModel
-    (
-        const dictionary& dict
-    );
+    explicit baseModel(const dictionary& dict);
 
     /// Move construct
-    baseModel
-    (
-        baseModel&& other
-    ) = default;
+    baseModel(baseModel&& other) = default;
 
     /// Delete default copy construct
-    baseModel
-    (
-        const baseModel& other
-    ) = delete;
+    baseModel(const baseModel& other) = delete;
 
     /// Destruct baseModels
     virtual ~baseModel();
@@ -79,22 +75,19 @@ public:
 
     /// @return The concrete `baseRTSTemplate` from dictionary
     /// as a pointer to base type
-    static autoPtr<baseModel> New
-    (
-        const dictionary& dict
-    );
+    static autoPtr<baseModel> New(const dictionary& dict);
 
     /// @return a dictionary reflecting this object
-    static dictionary schema(const word& modelType) {
+    static dictionary schema(const word& modelType)
+    {
         auto cstrIter = schemasPtr_->cfind(modelType);
         dictionary dict;
-        dict.set(word(typeName+"Type"), modelType);
+        dict.set(word(typeName + "Type"), modelType);
 
-        if (!cstrIter.found())
-        {
-            FatalErrorInFunction
-            << modelType << " was not found in schema table."
-            << exit(FatalError);
+        if (!cstrIter.found()) {
+            FatalErrorInFunction << modelType
+                                 << " was not found in schema table."
+                                 << exit(FatalError);
         }
 
         return dict + cstrIter()();
@@ -116,12 +109,9 @@ public:
 
 } /// !namespace Foam
 
-REFL_AUTO
-(
-    type(Foam::mff::baseModel),
-    field(key_),
-    field(m_),
-    field(vv_)
-)
+REFL_AUTO(type(Foam::mff::baseModel),
+          field(key_),
+          field(m_),
+          field(vv_))
 
 #endif

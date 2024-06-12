@@ -32,7 +32,8 @@ baseModel::baseModel
 )
 :
     dict_(dict),
-    m_(),
+    key_{ nullptr },
+    m_(ui::properties<label>::getMemberDefault<baseModel>("m_")),
     vv_()
 {}
 
