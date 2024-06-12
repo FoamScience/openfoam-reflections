@@ -41,5 +41,12 @@ For the mechanism to work for you, you have to follow specific methods:
 If you don't want to bloat your system but still would like to give this a try:
 ```bash
 git clone https://github.com/FoamScience/openfoam-apptainer-packaging /tmp/of_tainers
-
+git clone https://github.com/FoamScience/openfoam-reflections
+cd openfoam-reflections
+ansible-playbook /tmp/of_tainers/build.yaml --extra-vars="original_dir=$PWD" --extra-vars="@build/config.yaml"
+# In one terminal (it's fine if there are some errors)
+apptainer run containers/projects/reflections.sif "npm start --prefix /opt/openfoam-reflections/reflect-json-app"
+# In another terminal (and choose one of the options)
+apptainer run containers/projects/reflections.sif "/opt/openfoam-reflections/interactiveUI/interactiveUI"
+# Then check localhost:3000 in a web browser
 ```

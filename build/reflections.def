@@ -10,7 +10,7 @@
 #
 # ---------------------------------------------------------------------------
 Bootstrap: localimage
-From: containers/basic/{{ BASE_CONTAINER }}.sif
+From: {{ CONTAINERS_DIR }}/basic/{{ BASE_CONTAINER }}.sif
 
 %arguments
     BASE_CONTAINER=opencfd-openfoam
@@ -20,30 +20,34 @@ From: containers/basic/{{ BASE_CONTAINER }}.sif
     OPENFOAM_GIT_REF=default
 
 %post
-    git clone https://github.com/FoamScience/openfoam-reflections /opt/openfoam-reflections -b apptainer
+    git clone https://github.com/FoamScience/openfoam-reflections /opt/openfoam-reflections
     DEBIAN_FRONTEND=noninteractive
     apt-get update
     apt --fix-broken install -y
     apt-get install -y libasio-dev
+    NODE_VERSION=v18.18.2
     export NVM_DIR=/usr/local/nvm
     mkdir $NVM_DIR
     curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash
     [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
-    nvm install v18
-    nvm use v18
-    npm install --prefix /opt/openfoam-reflections/reflect-json-app
+    nvm install $NODE_VERSION
+    nvm use $NODE_VERSION
+    mkdir -p /tmp/npm-cache
+    npm config set cache /tmp/npm-cache --global
+    npm --global cache verify
     sed -i 's/Compound<T>(/Compound(/g' /usr/lib/openfoam/openfoam{{ OPENFOAM_VERSION }}/src/OpenFOAM/lnInclude/token.H 
     /bin/bash -c "source /usr/lib/openfoam/openfoam{{ OPENFOAM_VERSION }}/etc/bashrc && cd /opt/openfoam-reflections && ./build.sh"
     reflections_ref=`git -C /opt/openfoam-reflections rev-parse --short HEAD`
     crow_ref=`git -C /opt/openfoam-reflections/Crow rev-parse --short HEAD`
     jq --arg app reflections --arg commit $reflections_ref \
-        --arg crow $crow_ref \
+        --arg crow $crow_ref  --arg node $NODE_VERSION \
         '.[$app] |= if . == null then
         {
             commit: $commit,
             crow_commit: $crow,
             cmd_endpoint: "/opt/openfoam-reflections/interactiveUI/interactiveUI",
             cmd_ux: "npm start --prefix /opt/openfoam-reflections/reflect-json-app",
+            node_version: $node
         }
         else . +
         {
@@ -51,11 +55,14 @@ From: containers/basic/{{ BASE_CONTAINER }}.sif
             crow_commit: $crow,
             cmd_endpoint: "/opt/openfoam-reflections/interactiveUI/interactiveUI",
             cmd_ux: "npm start --prefix /opt/openfoam-reflections/reflect-json-app",
+            node_version: $node
         } end' /apps.json > /tmp/apps.json
     mv /tmp/apps.json /apps.json
 
 %environment
     export NVM_DIR=/usr/local/nvm
+    export ESLINT_CACHE_LOCATION=/tmp/.eslintcache
+    export XDG_CACHE_HOME="/tmp"
 
 %runscript
     /bin/bash -c 'cd /usr/lib/openfoam/openfoam{{ OPENFOAM_VERSION }} && source etc/bashrc && mkdir -p $FOAM_USER_LIBBIN && mkdir -p $FOAM_USER_APPBIN'

@@ -11,7 +11,7 @@ containers:
         fork: com-openfoam
         version: 2312
   projects:
-    test:
+    reflections:
       base_container: opencfd-openfoam
       definition: build/reflections.def
 pull:
