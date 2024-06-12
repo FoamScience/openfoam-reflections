@@ -1,0 +1,68 @@
+# ---------------------------------------------------------------------------
+#
+# Create ESI OpenFOAM-based test image for OpenFOAM reflections
+#
+# Build
+#   apptainer build reflections.sif reflections.def
+#
+# Note
+#   apptainer version 1.3.1
+#
+# ---------------------------------------------------------------------------
+Bootstrap: localimage
+From: containers/basic/{{ BASE_CONTAINER }}.sif
+
+%arguments
+    BASE_CONTAINER=opencfd-openfoam
+    OS_VERSION=24.04
+    OPENMPI_VERSION=4.1.5
+    OPENFOAM_VERSION=2312
+    OPENFOAM_GIT_REF=default
+
+%post
+    git clone https://github.com/FoamScience/openfoam-reflections /opt/openfoam-reflections -b apptainer
+    DEBIAN_FRONTEND=noninteractive
+    apt-get update
+    apt --fix-broken install -y
+    apt-get install -y libasio-dev
+    export NVM_DIR=/usr/local/nvm
+    mkdir $NVM_DIR
+    curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash
+    [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+    nvm install v18
+    nvm use v18
+    npm install --prefix /opt/openfoam-reflections/reflect-json-app
+    sed -i 's/Compound<T>(/Compound(/g' /usr/lib/openfoam/openfoam{{ OPENFOAM_VERSION }}/src/OpenFOAM/lnInclude/token.H 
+    /bin/bash -c "source /usr/lib/openfoam/openfoam{{ OPENFOAM_VERSION }}/etc/bashrc && cd /opt/openfoam-reflections && ./build.sh"
+    reflections_ref=`git -C /opt/openfoam-reflections rev-parse --short HEAD`
+    crow_ref=`git -C /opt/openfoam-reflections/Crow rev-parse --short HEAD`
+    jq --arg app reflections --arg commit $reflections_ref \
+        --arg crow $crow_ref \
+        '.[$app] |= if . == null then
+        {
+            commit: $commit,
+            crow_commit: $crow,
+            cmd_endpoint: "/opt/openfoam-reflections/interactiveUI/interactiveUI",
+            cmd_ux: "npm start --prefix /opt/openfoam-reflections/reflect-json-app",
+        }
+        else . +
+        {
+            commit: $commit,
+            crow_commit: $crow,
+            cmd_endpoint: "/opt/openfoam-reflections/interactiveUI/interactiveUI",
+            cmd_ux: "npm start --prefix /opt/openfoam-reflections/reflect-json-app",
+        } end' /apps.json > /tmp/apps.json
+    mv /tmp/apps.json /apps.json
+
+%environment
+    export NVM_DIR=/usr/local/nvm
+
+%runscript
+    /bin/bash -c 'cd /usr/lib/openfoam/openfoam{{ OPENFOAM_VERSION }} && source etc/bashrc && mkdir -p $FOAM_USER_LIBBIN && mkdir -p $FOAM_USER_APPBIN'
+    if [ $# -eq 0 ]; then
+        /bin/bash -c "[ -s $NVM_DIR/nvm.sh ] && \. $NVM_DIR/nvm.sh && source /usr/lib/openfoam/openfoam{{ OPENFOAM_VERSION }}/etc/bashrc && /bin/bash --login"
+    else
+        /bin/bash -c "[ -s $NVM_DIR/nvm.sh ] && \. $NVM_DIR/nvm.sh && source /usr/lib/openfoam/openfoam{{ OPENFOAM_VERSION }}/etc/bashrc && $@"
+    fi
+%labels
+    Description OpenFOAM reflections for easier and maintainable UX builds

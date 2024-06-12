@@ -1,6 +1,7 @@
 # Crow PART
 Crow/
 # OpenFOAM PART
+containers/
 */lnInclude/*
 .clang-format
 .cache/
