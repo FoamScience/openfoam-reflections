@@ -25,12 +25,28 @@ To compile the sample application:
 git clone https://github.com/FoamScience/openfoam-reflections
 cd openfoam-reflections
 # Needs OpenFOAM to be sourced
-./build_and_run.sh # Works on Ubuntu with NodeJs v18 installed
+./build.sh # Works on Ubuntu with NodeJs v18 installed
+npm start --prefix reflect-json-app/
 # in another terminal, you need to fire the interactiveUI
-./interactiveUI
+./interactiveUI/interactiveUI
 ```
 
 For the mechanism to work for you, you have to follow specific methods:
 - A few macros need to be called for your base and child models (See [interactiveUI/baseModel](/interactiveUI/baseModel) as an example)
 - Your `::New` function needs to have a dictionary as first argument.
 - In general, your types need to satisfy concept constraints in [uiConcepts.H](/src/ui/uiConcepts.H) (Or the other way around, your call)
+
+## Apptainer containers
+
+If you don't want to bloat your system but still would like to give this a try:
+```bash
+git clone https://github.com/FoamScience/openfoam-apptainer-packaging /tmp/of_tainers
+git clone https://github.com/FoamScience/openfoam-reflections
+cd openfoam-reflections
+ansible-playbook /tmp/of_tainers/build.yaml --extra-vars="original_dir=$PWD" --extra-vars="@build/config.yaml"
+# In one terminal (it's fine if there are some errors)
+apptainer run containers/projects/reflections.sif "npm start --prefix /opt/openfoam-reflections/reflect-json-app"
+# In another terminal (and choose one of the options)
+apptainer run containers/projects/reflections.sif "/opt/openfoam-reflections/interactiveUI/interactiveUI"
+# Then check localhost:3000 in a web browser
+```
