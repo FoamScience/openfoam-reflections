@@ -168,7 +168,7 @@ main(int argc, char* argv[])
       .headers("X-Custom-Header", "Upgrade-Insecure-Requests")
       .methods("POST"_method, "GET"_method)
       .origin("*");
-    CROW_ROUTE(app, "/")([]() { return "Hello world"; });
+    CROW_ROUTE(app, "/")([]() { return "Must pass a path, like /classes/mff_baseModel"; });
 
     // Endpoint to get all classes
     CROW_ROUTE(app, "/classes/mff__baseModel")

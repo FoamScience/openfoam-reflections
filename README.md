@@ -45,8 +45,10 @@ git clone https://github.com/FoamScience/openfoam-reflections
 cd openfoam-reflections
 ansible-playbook /tmp/of_tainers/build.yaml --extra-vars="original_dir=$PWD" --extra-vars="@build/config.yaml"
 # In one terminal (it's fine if there are some errors)
-apptainer run containers/projects/reflections.sif "npm start --prefix /opt/openfoam-reflections/reflect-json-app"
-# In another terminal (and choose one of the options)
 apptainer run containers/projects/reflections.sif "/opt/openfoam-reflections/interactiveUI/interactiveUI"
+# In another terminal (and choose one of the options)
+apptainer run containers/projects/reflections.sif "npm start --prefix /opt/openfoam-reflections/reflect-json-app"
 # Then check localhost:3000 in a web browser
+# Or if you prefer a terminal UI
+apptainer run containers/projects/reflections.sif "/opt/openfoam-reflections/TUI/tui"
 ```
