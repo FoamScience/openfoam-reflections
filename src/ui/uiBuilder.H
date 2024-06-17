@@ -165,10 +165,6 @@ struct builder
                     Info << "is " << memberTypeName << " of pointer type? "
                          << ui::SomePtr<memberType> << endl;
                 }
-                Info << "*----------------- "
-                     << (ui::isUIMember<memberType>) << endl;
-                Info << "*----------------- "
-                     << (requires { memberType::init(); }) << endl;
                 if constexpr (ui::SomePtr<memberType>) {
                     // If a pointer; check if it is a pointer to a base RTS
                     // class

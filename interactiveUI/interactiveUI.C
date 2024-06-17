@@ -1,6 +1,6 @@
+#include "anotherModel.H" // TODO: remove this dependency, it's here for testing only
 #include "baseModel.H"
 #include "childModel.H" // TODO: remove this dependency, it's here for testing only
-#include "anotherModel.H" // TODO: remove this dependency, it's here for testing only
 #include "crow/middlewares/cors.h"
 #include "dictionary.H"
 #include "refl.H"
@@ -82,7 +82,8 @@ reflectAndBuildClassInfo()
             base_json["description"] = "No description for this item";
             base_json["value"] =
               ui::builder<T>::template getRTSJSONOptions<pureTypeName>();
-            json[string(pureTypeName::typeName) + "Type"] = std::move(base_json);
+            json[string(pureTypeName::typeName) + "Type"] =
+              std::move(base_json);
         }
 
         for_each(type.members, [&](auto member) {
@@ -106,10 +107,11 @@ reflectAndBuildClassInfo()
                         // ui::builder<elementType>::schemaFromUser();
                         Info << "Choose a Model from"
                              << elementType::schemasPtr_->toc() << endl;
-                        word modelType;
-                        std::getline(std::cin, modelType);
+                        word modelType = elementType::schemasPtr_->toc()[0];
+                        // std::getline(std::cin, modelType);
                         member_json["value"] = typeid(elementType).name();
-                        member_json["description"] = "No description for this item";
+                        member_json["description"] =
+                          "No description for this item";
                     } else {
                         auto ftype = ui::builder<elementType>::demangle(
                           typeid(elementType).name());
@@ -117,7 +119,8 @@ reflectAndBuildClassInfo()
                           ui::builder<elementType>::familiarNaming(ftype);
                         string key = "__optional " + fname + " here__";
                         member_json["value"] = key;
-                        member_json["description"] = "No description for this item";
+                        member_json["description"] =
+                          "No description for this item";
                     }
                 }
                 if constexpr (ui::isUIMember<memberType>) {
@@ -132,7 +135,8 @@ reflectAndBuildClassInfo()
                         dict.set("type", memberType::init());
                     }
                     member_json["value"] = dict.lookup("type").toString();
-                    member_json["description"] = std::string(memberType::descr());
+                    member_json["description"] =
+                      std::string(memberType::descr());
                 } else {
                     word ftype =
                       ui::builder<pureTypeName>::familiarNaming(memberTypeName);
@@ -153,8 +157,8 @@ main(int argc, char* argv[])
     mff::baseModel::debug = 1;
     Info << "Choose a Model from available baseModels:" << endl;
     Info << mff::baseModel::schemasPtr_->toc() << endl;
-    word modelType;
-    std::getline(std::cin, modelType);
+    word modelType = mff::baseModel::schemasPtr_->toc()[0];
+    // std::getline(std::cin, modelType);
     Info << mff::baseModel::schema(modelType) << endl;
     // Info << "--------------------------------------" << endl;
     // Info << "The baseModel is reflected as:" << endl;
@@ -168,7 +172,10 @@ main(int argc, char* argv[])
       .headers("X-Custom-Header", "Upgrade-Insecure-Requests")
       .methods("POST"_method, "GET"_method)
       .origin("*");
-    CROW_ROUTE(app, "/")([]() { return "Must pass a path, like /classes/mff_baseModel"; });
+    CROW_ROUTE(app, "/")
+    ([]() {
+        return "Must pass a path to the base URL, like /classes/mff__baseModel";
+    });
 
     // Endpoint to get all classes
     CROW_ROUTE(app, "/classes/mff__baseModel")
