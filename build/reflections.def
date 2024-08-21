@@ -20,27 +20,29 @@ From: {{ CONTAINERS_DIR }}/basic/{{ BASE_CONTAINER }}.sif
     OPENFOAM_GIT_REF=default
 
 %post
+    # GET the repo
     git clone https://github.com/FoamScience/openfoam-reflections /opt/openfoam-reflections
+    cd /opt/openfoam-reflections
+    git checkout {{ REFERENCE }}
+    cd -
+
+    # Prereqs
     DEBIAN_FRONTEND=noninteractive
     apt-get update
     apt --fix-broken install -y
     apt-get install -y libasio-dev
-    NODE_VERSION=v18.18.2
-    export NVM_DIR=/usr/local/nvm
-    mkdir $NVM_DIR
-    curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash
-    [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
-    nvm install $NODE_VERSION
-    nvm use $NODE_VERSION
-    mkdir -p /tmp/npm-cache
-    npm config set cache /tmp/npm-cache --global
-    npm --global cache verify
+    # just to be safe
     sed -i 's/Compound<T>(/Compound(/g' /usr/lib/openfoam/openfoam{{ OPENFOAM_VERSION }}/src/OpenFOAM/lnInclude/token.H 
+
+    # Golang
     curl -L -o /tmp/go1.22.4.linux-amd64.tar.gz https://go.dev/dl/go1.22.4.linux-amd64.tar.gz
     rm -rf /usr/local/go && tar -C /usr/local -xzf /tmp/go1.22.4.linux-amd64.tar.gz
     export PATH=$PATH:/usr/local/go/bin
+
+    # Build
     /bin/bash -c "export PATH=$PATH:/usr/local/go/bin && source /usr/lib/openfoam/openfoam{{ OPENFOAM_VERSION }}/etc/bashrc && cd /opt/openfoam-reflections && ./build.sh"
-    /bin/bash -c "cd /opt/openfoam-reflections/TUI && go build -o tui main.go"
+
+    # Metadata
     reflections_ref=`git -C /opt/openfoam-reflections rev-parse --short HEAD`
     crow_ref=`git -C /opt/openfoam-reflections/Crow rev-parse --short HEAD`
     go_version=`go version | cut -f3 -d' '`
@@ -51,36 +53,30 @@ From: {{ CONTAINERS_DIR }}/basic/{{ BASE_CONTAINER }}.sif
         {
             commit: $commit,
             crow_commit: $crow,
-            cmd_endpoint: "/opt/openfoam-reflections/interactiveUI/interactiveUI",
-            cmd_webui: "npm start --prefix /opt/openfoam-reflections/reflect-json-app",
+            cmd_endpoint: "/opt/openfoam-reflections/endpoint/endpoint",
             cmd_tui: "/opt/openfoam-reflections/TUI/tui",
-            node_version: $node,
             go_version: $go,
         }
         else . +
         {
             commit: $commit,
             crow_commit: $crow,
-            cmd_endpoint: "/opt/openfoam-reflections/interactiveUI/interactiveUI",
-            cmd_webui: "npm start --prefix /opt/openfoam-reflections/reflect-json-app",
+            cmd_endpoint: "/opt/openfoam-reflections/endpoint/endpoint",
             cmd_tui: "/opt/openfoam-reflections/TUI/tui",
-            node_version: $node,
             go_version: $go,
         } end' /apps.json > /tmp/apps.json
     mv /tmp/apps.json /apps.json
 
 %environment
-    export NVM_DIR=/usr/local/nvm
-    export ESLINT_CACHE_LOCATION=/tmp/.eslintcache
     export XDG_CACHE_HOME="/tmp"
     export PATH=$PATH:/usr/local/go/bin
 
 %runscript
     /bin/bash -c 'cd /usr/lib/openfoam/openfoam{{ OPENFOAM_VERSION }} && source etc/bashrc && mkdir -p $FOAM_USER_LIBBIN && mkdir -p $FOAM_USER_APPBIN'
     if [ $# -eq 0 ]; then
-        /bin/bash -c "[ -s $NVM_DIR/nvm.sh ] && \. $NVM_DIR/nvm.sh && source /usr/lib/openfoam/openfoam{{ OPENFOAM_VERSION }}/etc/bashrc && /bin/bash --login"
+        /bin/bash -c "source /usr/lib/openfoam/openfoam{{ OPENFOAM_VERSION }}/etc/bashrc && /bin/bash --login"
     else
-        /bin/bash -c "[ -s $NVM_DIR/nvm.sh ] && \. $NVM_DIR/nvm.sh && source /usr/lib/openfoam/openfoam{{ OPENFOAM_VERSION }}/etc/bashrc && $@"
+        /bin/bash -c "source /usr/lib/openfoam/openfoam{{ OPENFOAM_VERSION }}/etc/bashrc && $@"
     fi
 %labels
     Description OpenFOAM reflections for easier and maintainable UX builds
