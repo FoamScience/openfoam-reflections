@@ -1,4 +1,4 @@
-name: OF2206-GCC13
+name: Tests
 defaults:
   run:
     shell: bash -o pipefail -i {0}
@@ -19,13 +19,10 @@ on:
 jobs:
   build:
     runs-on: ubuntu-22.04
-
-    container:
-      image: ghcr.io/foamscience/jammy-openfoam:v2206-gcc13
-      options: --user openfoam
-      env:
-        CATCH_TIMEOUT: 120
-        FOAM_FOAMUT: /tmp/foamUT
+    env:
+      CATCH_TIMEOUT: 120
+      FOAM_FOAMUT: /tmp/foamUT
+      APPTAINERS: /tmp/of_tainers
 
     steps:
       - name: Checkout repository
@@ -37,15 +34,24 @@ jobs:
         with:
           detached: true
 
+      - name: Install Ansible
+        run: |
+          python -m pip install --upgrade pip
+          pip install ansible
+
       - name: Compile and Test OpenFOAM components
         run: |
+          COMMIT_HASH=${{ github.sha }}
+          git clone https://github.com/FoamScience/openfoam-apptainer-packaging $APPTAINERS
+          git clone https://github.com/FoamScience/foamUT $FOAM_FOAMUT
+          sed -i 's/- main/- '${COMMIT_HASH}'/' build/config.yaml
+          ansible-playbook $APPTAINERS/build.yaml --extra-vars="original_dir=$PWD" --extra-vars="@build/config.yaml"
           source /usr/lib/openfoam/openfoam2206/etc/bashrc
           mkdir -p $FOAM_USER_LIBBIN
           wmakeLnInclude src/
           wmake src/testlib
-          git clone https://github.com/FoamScience/foamUT $FOAM_FOAMUT
           sed -i 's/mpirun/mpirun --oversubscribe/g' $FOAM_FOAMUT/Alltest
           ln -s "$PWD"/tests "$FOAM_FOAMUT/tests/reflectionTests"
           cd $FOAM_FOAMUT || exit 1
           rm -rf tests/exampleTests
-          ./Alltest -s
+          apptainer run containers/projects/reflections-${COMMIT_HASH}.sif "./Alltest -s"

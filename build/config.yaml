@@ -16,7 +16,7 @@ containers:
       definition: build/reflections.def
       build_args:
         reference:
-        - rewrite
+        - main
 pull:
   try_to_pull: true
   protocol: "oras"
