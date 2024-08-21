@@ -1,5 +1,6 @@
 EXE_INC = $(DEBUG_FLAGS) \
     -std=c++20 \
+    -I../lnInclude \
     -I$(LIB_SRC)/surfMesh/lnInclude \
     -I$(LIB_SRC)/Pstream/lnInclude \
     -I$(_REPO_ROOT)/src/lnInclude \
