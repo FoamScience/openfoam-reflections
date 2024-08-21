@@ -1,0 +1,15 @@
+EXE_INC = $(DEBUG_FLAGS) \
+    -std=c++20 -fconcepts-diagnostics-depth=5 \
+    -I$(LIB_SRC)/surfMesh/lnInclude \
+    -I$(LIB_SRC)/Pstream/lnInclude \
+    -I$(_REPO_ROOT)/src/lnInclude \
+    -I$(_REPO_ROOT)/src/testlib/lnInclude \
+    -I$(FOAM_USER_LIBBIN)/catch2/include
+
+EXE_LIBS = \
+    -lsurfMesh \
+    -L$(FOAM_USER_LIBBIN) -L$(FOAM_LIBBIN)/$(FOAM_MPI) \
+    -L$(FOAM_USER_LIBBIN)/catch2/lib \
+    -L$(FOAM_USER_LIBBIN)/catch2/lib64 \
+    -l:libCatch2.a \
+    -ldynamicFvMesh -lPstream -lreflectionTestlib
