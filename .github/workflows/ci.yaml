@@ -43,7 +43,6 @@ jobs:
           mkdir -p $FOAM_USER_LIBBIN
           wmakeLnInclude src/
           wmake src/testlib
-          wmake applications/endpoint
           git clone https://github.com/FoamScience/foamUT $FOAM_FOAMUT
           sed -i 's/mpirun/mpirun --oversubscribe/g' $FOAM_FOAMUT/Alltest
           ln -s "$PWD"/tests "$FOAM_FOAMUT/tests/reflectionTests"

@@ -47,8 +47,8 @@ From: {{ CONTAINERS_DIR }}/basic/{{ BASE_CONTAINER }}.sif
     crow_ref=`git -C /opt/openfoam-reflections/Crow rev-parse --short HEAD`
     go_version=`go version | cut -f3 -d' '`
     jq --arg app reflections --arg commit $reflections_ref \
-        --arg crow $crow_ref  --arg node $NODE_VERSION \
-        --arg go $go_version  --arg node $NODE_VERSION \
+        --arg crow $crow_ref \
+        --arg go $go_version \
         '.[$app] |= if . == null then
         {
             commit: $commit,
