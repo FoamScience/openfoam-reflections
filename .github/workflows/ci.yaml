@@ -1,8 +1,13 @@
-name: Tests
+name: OF2212
 defaults:
   run:
     shell: bash -o pipefail -i {0}
 on:
+  push:
+    branches:
+      - master
+  pull_request:
+    types: [opened, synchronize, reopened]
   workflow_dispatch:
     inputs:
       debug_enabled:
@@ -10,20 +15,13 @@ on:
         description: 'Tmate debugging session'
         required: false
         default: false
-  push:
-    branches:
-      - main
-  pull_request:
-    types: 
-      - opened
-      - synchronize
 
 jobs:
   build:
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-22.04
 
     container:
-      image: ghcr.io/foamscience/jammy-openfoam:v2206-gcc13
+      image: ghcr.io/foamscience/jammy-openfoam:v2212
       options: --user openfoam
       env:
         CATCH_TIMEOUT: 120
@@ -41,13 +39,14 @@ jobs:
 
       - name: Compile and Test OpenFOAM components
         run: |
-          source /usr/lib/openfoam/openfoam2206/etc/bashrc
+          source /usr/lib/openfoam/openfoam2212/etc/bashrc
           mkdir -p $FOAM_USER_LIBBIN
           wmakeLnInclude src/
           wmake src/testlib
+          wmake applications/endpoint
           git clone https://github.com/FoamScience/foamUT $FOAM_FOAMUT
           sed -i 's/mpirun/mpirun --oversubscribe/g' $FOAM_FOAMUT/Alltest
           ln -s "$PWD"/tests "$FOAM_FOAMUT/tests/reflectionTests"
           cd $FOAM_FOAMUT || exit 1
-          _REPO_ROOT=$PWD
-          ./Alltest --no-parallel -s
+          rm -rf tests/exampleTests
+          ./Alltest -s
