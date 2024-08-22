@@ -33,6 +33,7 @@ From: {{ CONTAINERS_DIR }}/basic/{{ BASE_CONTAINER }}.sif
     apt-get install -y libasio-dev
     # just to be safe
     sed -i 's/Compound<T>(/Compound(/g' /usr/lib/openfoam/openfoam{{ OPENFOAM_VERSION }}/src/OpenFOAM/lnInclude/token.H 
+    sed -i 's/DiagonalMatrix<Type>(/DiagonalMatrix(/g' /usr/lib/openfoam/openfoam{{ OPENFOAM_VERSION }}/src/OpenFOAM/lnInclude/DiagonalMatrix.H
 
     # Golang
     curl -L -o /tmp/go1.22.4.linux-amd64.tar.gz https://go.dev/dl/go1.22.4.linux-amd64.tar.gz
@@ -40,7 +41,12 @@ From: {{ CONTAINERS_DIR }}/basic/{{ BASE_CONTAINER }}.sif
     export PATH=$PATH:/usr/local/go/bin
 
     # Build
-    /bin/bash -c "export PATH=$PATH:/usr/local/go/bin && source /usr/lib/openfoam/openfoam{{ OPENFOAM_VERSION }}/etc/bashrc && cd /opt/openfoam-reflections && ./build.sh"
+    exec /bin/bash <<'EOF'
+    export PATH=$PATH:/usr/local/go/bin
+    source /usr/lib/openfoam/openfoam{{ OPENFOAM_VERSION }}/etc/bashrc
+    cd /opt/openfoam-reflections
+    FOAM_USER_LIBBIN=$FOAM_LIBBIN ./build.sh
+EOF
 
     # Metadata
     reflections_ref=`git -C /opt/openfoam-reflections rev-parse --short HEAD`

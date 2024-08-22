@@ -58,4 +58,12 @@ jobs:
           ln -s "$PWD"/tests "$FOAM_FOAMUT/tests/reflectionTests"
           cd $FOAM_FOAMUT || exit 1
           rm -rf tests/exampleTests
+          _REPO_ROOT=/opt/openfoam-reflections #<- use container src tree for tests
           apptainer run $REPO_PATH/containers/projects/reflections-${COMMIT_HASH}.sif "./Alltest --no-parallel -s"
+
+      - name: Upload Apptainer container as an artifact
+        if: ${{ success() }}
+        uses: actions/upload-artifact@v3
+        with:
+          name: reflections-container
+          path: containers/projects/reflections-${{ github.sha }}.sif
