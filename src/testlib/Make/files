@@ -1,0 +1,8 @@
+origOpenFOAMModel/origOpenFOAMModel.C
+origChild1Model/origChild1Model.C
+origChild2Model/origChild2Model.C
+
+uiModel/uiModel.C
+uiChildModel/uiChildModel.C
+
+LIB = $(FOAM_USER_LIBBIN)/libreflectionTestlib

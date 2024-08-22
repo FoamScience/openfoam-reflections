@@ -22,12 +22,9 @@ jobs:
   build:
     runs-on: ubuntu-24.04
 
-    container:
-      image: ghcr.io/foamscience/jammy-openfoam:v2206-gcc13
-      options: --user openfoam
-      env:
-        CATCH_TIMEOUT: 120
-        FOAM_FOAMUT: /tmp/foamUT
+    env:
+      CATCH_TIMEOUT: 120
+      FOAM_FOAMUT: /tmp/foamUT
 
     steps:
       - name: Checkout repository
@@ -39,15 +36,24 @@ jobs:
         with:
           detached: true
 
+      - name: Install OpenFOAM
+        run: |
+          sudo apt update
+          sudo apt install -y curl
+          curl https://dl.openfoam.com/add-debian-repo.sh | sudo bash
+          sudo apt install -y openfoam2312-dev
+
       - name: Compile and Test OpenFOAM components
         run: |
-          source /usr/lib/openfoam/openfoam2206/etc/bashrc
+          source /usr/lib/openfoam/openfoam2312/etc/bashrc
+          sudo sed -i 's/Compound<T>(/Compound(/g' /usr/lib/openfoam/openfoam2312/src/OpenFOAM/lnInclude/token.H 
+          sudo sed -i 's/DiagonalMatrix<Type>(/DiagonalMatrix(/g' /usr/lib/openfoam/openfoam2312/src/OpenFOAM/lnInclude/DiagonalMatrix.H
           mkdir -p $FOAM_USER_LIBBIN
           wmakeLnInclude src/
           wmake src/testlib
           git clone https://github.com/FoamScience/foamUT $FOAM_FOAMUT
           sed -i 's/mpirun/mpirun --oversubscribe/g' $FOAM_FOAMUT/Alltest
-          ln -s "$PWD"/tests "$FOAM_FOAMUT/tests/reflectionTests"
+          ln -s "$PWD"/tests/reflections "$FOAM_FOAMUT/tests/reflections"
+          export _REPO_ROOT=$PWD
           cd $FOAM_FOAMUT || exit 1
-          _REPO_ROOT=$PWD
           ./Alltest --no-parallel -s
