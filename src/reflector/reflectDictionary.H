@@ -204,7 +204,7 @@ struct reflect {
                     dictionary typeDict;
                     typeDict.set<string>("type", word(baseType::typeName+"Type"));
                     typeDict.set<string>("default", pureTypeName::typeName);
-                    skeleton.subDictOrAdd(pureTypeName::typeName+"Type") = typeDict;
+                    skeleton.subDictOrAdd(baseType::typeName+"Type") = typeDict;
                 }
             }
         });
