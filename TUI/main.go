@@ -286,7 +286,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				if strings.Contains(trimmedKey, "_Endpoint") {
 					trimmedKey = selectedOption
 				}
-                if m.indentLevel > 0 {
+                if m.indentLevel > 0 && currentKey != "_Endpoint" {
                     postKey = m.path[len(m.path)-1] + "Type"
                 }
 				m.jsonObject[postKey] = selectedOption
