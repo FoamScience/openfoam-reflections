@@ -7,7 +7,6 @@ using Reflect::uiElement;
 defineTypeNameAndDebug(uiModel, 0);
 defineRunTimeSelectionTable(uiModel, dictionary);
 defineSchemaTable(uiModel);
-addToSchemaTable(uiModel, uiModel);
 
 uiModel::uiModel(
     const dictionary& dict)
