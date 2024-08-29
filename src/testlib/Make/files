@@ -5,4 +5,10 @@ origChild2Model/origChild2Model.C
 uiModel/uiModel.C
 uiChildModel/uiChildModel.C
 
+regularModel/regularModels.C
+childRegularModel/childRegularModels.C
+
+wrapperModel/wrapperModels.C
+childWrapperModel/childWrapperModels.C
+
 LIB = $(FOAM_USER_LIBBIN)/libreflectionTestlib
