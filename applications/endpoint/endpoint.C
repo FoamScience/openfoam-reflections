@@ -10,6 +10,8 @@
 #include <type_traits>
 #include "origOpenFOAMModel.H"
 #include "uiModel.H"
+#include "wrapperModel.H"
+#include "childWrapperModel.H"
 
 using namespace Foam;
 
@@ -33,7 +35,6 @@ reflectAndBuildClassInfo(dictionary config)
     crow::json::wvalue json;
     // Create skeleton non-constructible config
     auto skel = Reflect::reflect<T, false>::schema(config);
-    Info<< skel << endl;
     // Convert to JSON
     std::function<crow::json::wvalue(const dictionary&)> parser;
     parser = [&parser](const dictionary& dict) -> crow::json::wvalue {
@@ -108,9 +109,17 @@ main(int argc, char* argv[])
         Info<< config << endl;
         return crow::response(reflectAndBuildClassInfo<uiModel>(config));
     });
-
     // Endpoint to handle POST requests for uiModel config
     CROW_ROUTE(app, "/classes/config/uiModel").methods("POST"_method)
+    (postHandle);
+
+    CROW_ROUTE(app, "/classes/regularModel%3Cvector%3E")
+    ([&config]() {
+        Info<< config << endl;
+        return crow::response(reflectAndBuildClassInfo<wrapperModel<vector>>(config));
+    });
+    // Endpoint to handle POST requests for uiModel config
+    CROW_ROUTE(app, "/classes/config/regularModel%3Cvector%3E").methods("POST"_method)
     (postHandle);
 
     // Reset config
@@ -127,6 +136,8 @@ main(int argc, char* argv[])
         jsonResponse["types"] = crow::json::wvalue::list({
             uiModel::typeName,
             origOpenFOAMModel::typeName,
+            regularModel<vector>::typeName,
+            "childRegularModel%3Cvector%3E",
         });
         return crow::response(jsonResponse);
     });
