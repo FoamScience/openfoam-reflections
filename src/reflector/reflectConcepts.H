@@ -110,6 +110,13 @@ concept UIElementWithMax = requires {
     { T::max() } -> std::convertible_to<typename T::valueType>;
 };
 
+/// @brief A concept for wrappers of RTS classes
+template <typename T>
+concept WrapperDictionaryRTSBase = requires {
+    typename T::wrappedType;
+    DictionaryRTSModelBase<typename T::wrappedType>;
+};
+
 } // namespace Reflect
 
 } // namespace Foam

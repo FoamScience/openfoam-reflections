@@ -20,6 +20,7 @@ namespace Foam {
     static void destroySchemaTables();                                         \
                                                                                \
     /* Subclass to add a schema to the table */                                \
+    /* TODO: better T name to avoid shadowing */                               \
     /* template<Reflect::SelfReflectableModel T> */                            \
     template <class T> struct addSchemaToTable {                               \
         /* Constructor adding schema builder function to table */              \

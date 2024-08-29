@@ -193,6 +193,32 @@ struct reflect {
             }
         }
 
+        /// TODO: maybe extract this bit into a templated function
+        if constexpr (WrapperDictionaryRTSBase<pureTypeName>) {
+            using wrappedType = pureTypeName::wrappedType;
+            Info<< "############ " << wrappedType::typeName << " " << DictionaryRTSModelBase<wrappedType>;
+            word typeKey(wrappedType::typeName + "Type");
+            // if it's an RTS base and a concrete type is requested in the
+            // config, get schema for concrete type instead else, communicate
+            // options
+            if (config.found(typeKey)) {
+                auto delegateType = config.get<word>(typeKey);
+                if constexpr (Constructible)
+                    delegateType += "Construct";
+                skeleton = T::schemasPtr_->operator[](delegateType)(config);
+            } else {
+                auto opts = getRTSOptions<wrappedType>();
+                if constexpr (Constructible) {
+                    skeleton.set(typeKey, opts);
+                } else {
+                    dictionary typeDict;
+                    typeDict.set<string>("type", typeKey);
+                    typeDict.set<string>("default", opts);
+                    skeleton.subDictOrAdd(typeKey) = typeDict;
+                }
+            }
+        }
+
         // if it's a concrete model for an RTS type, set type to typename
         for_each(refl::util::reflect_types(type.bases), [&](auto bs) {
             using baseType = typename decltype(bs)::type;
