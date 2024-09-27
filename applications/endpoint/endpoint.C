@@ -8,10 +8,9 @@
 #include <crow.h>
 #include <string>
 #include <type_traits>
-#include "origOpenFOAMModel.H"
-#include "uiModel.H"
-#include "wrapperModel.H"
-#include "childWrapperModel.H"
+#include "OpenFOAMModelReflect.H"
+#include "basicReflectedModel.H"
+#include "fullReflectedModel.H"
 
 using namespace Foam;
 
@@ -63,15 +62,15 @@ main(int argc, char* argv[])
     dictionary config;
     auto& cors = app.get_middleware<crow::CORSHandler>();
     cors.global()
-      .headers("X-Custom-Header", "Upgrade-Insecure-Requests")
-      .methods("POST"_method, "GET"_method)
+      .headers("X-Custom-Header", "Upgrade-Insecure-Requests", "Content-Type")
+      .methods("POST"_method, "GET"_method, "DELETE"_method)
       .origin("*");
 
     // Endpoint to get 
     CROW_ROUTE(app, "/")
     ([]() {
         return "<b>Docs:</b><br>Hit the base class URL with a GET,"
-            " something like <code>/classes/uiModel</code><br>"
+            " something like <code>/classes/fullReflectedModel</code><br>"
             "More supported classes can be consulted (GET) at <code>/supportedClasses</code><br>"
             "And if you want to configure the RTS reflection, POST to <code>/classes/config/yourClass</code><br>"
             "Lastly, reset the configuration with a DELETE to <code>/classes/config/reset</code>";
@@ -92,34 +91,30 @@ main(int argc, char* argv[])
         return crow::response(response_data);
     };
 
+    // OpenFOAMModel endpoints
+    CROW_ROUTE(app, "/classes/OpenFOAMModel%3Cvector%3E")
+    ([&config]() {
+        Info<< config << endl;
+        return crow::response(reflectAndBuildClassInfo<Reflect::wrapAbstract<OpenFOAMModel<vector>>>(config));
+    });
+    CROW_ROUTE(app, "/classes/config/OpenFOAMModel%3Cvector%3E").methods("POST"_method)
+    (postHandle);
 
-    // Endpoint to get all classes
-    CROW_ROUTE(app, "/classes/origOpenFOAMModel")
+    // basicReflectedModel endpoints
+    CROW_ROUTE(app, "/classes/basicReflectedModel")
     ([&]() {
-        return crow::response(reflectAndBuildClassInfo<origOpenFOAMModel>(config));
+        return crow::response(reflectAndBuildClassInfo<basicReflectedModel>(config));
     });
-
-    // Endpoint to run configured reflection from POST response
-    CROW_ROUTE(app, "/classes/config/origOpenFOAMModel").methods("POST"_method)
+    CROW_ROUTE(app, "/classes/config/basicReflectedModel").methods("POST"_method)
     (postHandle);
 
-    // Endpoint to get all classes
-    CROW_ROUTE(app, "/classes/uiModel")
+    // fullReflectedModel endpoints
+    CROW_ROUTE(app, "/classes/fullReflectedModel")
     ([&config]() {
         Info<< config << endl;
-        return crow::response(reflectAndBuildClassInfo<uiModel>(config));
+        return crow::response(reflectAndBuildClassInfo<fullReflectedModel>(config));
     });
-    // Endpoint to handle POST requests for uiModel config
     CROW_ROUTE(app, "/classes/config/uiModel").methods("POST"_method)
-    (postHandle);
-
-    CROW_ROUTE(app, "/classes/regularModel%3Cvector%3E")
-    ([&config]() {
-        Info<< config << endl;
-        return crow::response(reflectAndBuildClassInfo<wrapperModel<vector>>(config));
-    });
-    // Endpoint to handle POST requests for uiModel config
-    CROW_ROUTE(app, "/classes/config/regularModel%3Cvector%3E").methods("POST"_method)
     (postHandle);
 
     // Reset config
@@ -134,10 +129,9 @@ main(int argc, char* argv[])
     ([]() {
         crow::json::wvalue jsonResponse;
         jsonResponse["types"] = crow::json::wvalue::list({
-            uiModel::typeName,
-            origOpenFOAMModel::typeName,
-            regularModel<vector>::typeName,
-            "childRegularModel%3Cvector%3E",
+            OpenFOAMModel<vector>::typeName,
+            basicReflectedModel::typeName,
+            fullReflectedModel::typeName,
         });
         return crow::response(jsonResponse);
     });

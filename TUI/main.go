@@ -127,7 +127,7 @@ func main() {
 // Default entry point model
 func initialModel(host string, port int) Model {
 	baseURL := fmt.Sprintf("http://%s:%d/classes/", host, port)
-	defaultEndpoint := "uiModel"
+	defaultEndpoint := "fullReflectedModel"
 
 	data, keys, _ := fetchData(baseURL, defaultEndpoint)
     sortKeys(keys)
