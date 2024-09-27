@@ -61,6 +61,21 @@ namespace Foam {
         }                                                                      \
     }
 
+#define defineSchemaTableTemplated(baseType, Targ)                             \
+    template<> baseType<Targ>::schemaTable                                     \
+        *baseType<Targ>::schemasPtr_(nullptr);                                 \
+    template<> void baseType<Targ>::constructSchemaTables() {                  \
+        if (baseType<Targ>::schemasPtr_ == nullptr) {                          \
+            baseType<Targ>::schemasPtr_ = new baseType<Targ>::schemaTable;     \
+        }                                                                      \
+    }                                                                          \
+    template<> void baseType<Targ>::destroySchemaTables() {                    \
+        if (baseType<Targ>::schemasPtr_) {                                     \
+            delete baseType<Targ>::schemasPtr_;                                \
+            baseType<Targ>::schemasPtr_ = nullptr;                             \
+        }                                                                      \
+    }
+
 #define addToSchemaTable(baseType, childType)                                  \
     baseType::addSchemaToTable<childType> add##childType##SchemaToSchemaTable( \
         childType::typeName)

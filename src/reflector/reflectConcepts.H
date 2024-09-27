@@ -113,7 +113,6 @@ concept UIElementWithMax = requires {
 /// @brief A concept for wrappers of RTS classes
 template <typename T>
 concept WrapperDictionaryRTSBase = requires {
-    typename T::wrappedType;
     DictionaryRTSModelBase<typename T::wrappedType>;
 };
 
