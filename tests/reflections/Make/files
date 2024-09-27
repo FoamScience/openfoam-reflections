@@ -1,5 +1,7 @@
 $(FOAM_FOAMUT)/tests/testDriver.C
 
-reflectionTests.C
+noReflectionTests.C
+basicReflectionTests.C
+fullReflectionTests.C
 
 EXE = testDriver

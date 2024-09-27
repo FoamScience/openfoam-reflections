@@ -1,10 +1,15 @@
+/*
+ * Reaction of the reflection system to OpenFOAM classes with
+ * basic reflection support but all members are types with 0-lvl
+ * of reflection support
+*/
+
 #include "argList.H"
 #include "catch2/catch_all.hpp"
 #include "catch2/catch_message.hpp"
 #include "catch2/catch_test_macros.hpp"
-#include "origOpenFOAMModel.H"
 #include "subCycleTime.H"
-#include "uiModel.H"
+#include "basicReflectedModel.H"
 
 using namespace Foam;
 
@@ -12,13 +17,13 @@ extern Time* timePtr;
 extern argList* argsPtr;
 
 TEST_CASE(
-    "Unconfigured Refletion system supports basic patterns for OpenFOAM "
+    "Unconfigured Refletion supports basic patterns for OpenFOAM "
     "class member types both in constructive and documentation modes",
     "[cavity][serial]") {
     auto constructibleSkeleton =
-        Reflect::reflect<origOpenFOAMModel, true>::schema(dictionary::null);
+        Reflect::reflect<basicReflectedModel, true>::schema(dictionary::null);
     auto skeleton =
-        Reflect::reflect<origOpenFOAMModel, false>::schema(dictionary::null);
+        Reflect::reflect<basicReflectedModel, false>::schema(dictionary::null);
     SECTION("non constexpr default-constructible reports compiler default") {
         CHECK_FALSE(constructibleSkeleton.get<label>("m") == 15);
         REQUIRE(constructibleSkeleton.get<label>("m") == label());
@@ -34,11 +39,11 @@ TEST_CASE(
             "Foam::word"));
     }
     SECTION("RTS options get reported for a base model class") {
-        auto tp = origOpenFOAMModel::typeName + "Type";
+        auto tp = basicReflectedModel::typeName + "Type";
         const auto& sub = skeleton.subDict(tp);
         REQUIRE(sub.get<string>("default").startsWith("\"<<RTSoption>>"));
         REQUIRE(sub.get<string>("default").endsWith(
-            "( origChild1Model origChild2Model )\""));
+            "( child2BasicReflectedModel child1BasicReflectedModel )\""));
     }
 }
 
@@ -47,14 +52,14 @@ TEST_CASE(
     "in an RTS",
     "[cavity][serial]") {
     dictionary childConfig;
-    childConfig.set("origOpenFOAMModelType", "origChild2Model");
+    childConfig.set("basicReflectedModelType", "child2BasicReflectedModel");
     auto childSkel =
-        Reflect::reflect<origOpenFOAMModel, false>::schema(childConfig);
+        Reflect::reflect<basicReflectedModel, false>::schema(childConfig);
     SECTION(
         "child models report their concrete type as value in selection "
         "keyword") {
-        CHECK(childSkel.subDict("origOpenFOAMModelType").get<word>("default") ==
-              "origChild2Model");
+        CHECK(childSkel.subDict("basicReflectedModelType").get<word>("default") ==
+              "child2BasicReflectedModel");
     }
     SECTION(
         "child models report reflected members of their base alongside "
@@ -76,10 +81,10 @@ TEMPLATE_TEST_CASE_SIG(
     false,
     true) {
     dictionary childConfig;
-    childConfig.set("origOpenFOAMModelType", "origChild1Model");
-    childConfig.set("subModelType", "origChild2Model");
+    childConfig.set("basicReflectedModelType", "child1BasicReflectedModel");
+    childConfig.set("subModelType", "child2BasicReflectedModel");
     auto recursiveSkel =
-        Reflect::reflect<origOpenFOAMModel, mode>::schema(childConfig);
+        Reflect::reflect<basicReflectedModel, mode>::schema(childConfig);
     CHECK(recursiveSkel.isDict("subModel"));  // subModel is a sub dictionary
     const auto& sub = recursiveSkel.subDict("subModel");
     bool foundAllSubMembers = true;
@@ -94,61 +99,20 @@ TEST_CASE(
     "without explicit headers inclusion",
     "[cavity][serial]") {
     word childModel =
-        GENERATE(as<word>(), "origChild1Model", "origChild2Model");
+        GENERATE(as<word>(), "child1BasicReflectedModel", "child2BasicReflectedModel");
     dictionary childConfig;
-    childConfig.set("origOpenFOAMModelType", childModel);
-    if (childModel == "origChild1Model")
-        childConfig.set("subModelType", "origChild2Model");
-    auto skel = Reflect::reflect<origOpenFOAMModel, true>::schema(childConfig);
+    childConfig.set("basicReflectedModelType", childModel);
+    if (childModel == "child1BasicReflectedModel")
+        childConfig.set("subModelType", "child2BasicReflectedModel");
+    auto skel = Reflect::reflect<basicReflectedModel, true>::schema(childConfig);
     SECTION("typeName matches the concrete type") {
-        autoPtr<origOpenFOAMModel> model = origOpenFOAMModel::New(skel);
+        autoPtr<basicReflectedModel> model = basicReflectedModel::New(skel);
         REQUIRE(model->verifyType() == childModel);
     }
     SECTION("But default-constructed member values do not match skeletons") {
         label mInSkel(skel.get<label>("m"));
         skel.remove("m");
-        autoPtr<origOpenFOAMModel> model = origOpenFOAMModel::New(skel);
+        autoPtr<basicReflectedModel> model = basicReflectedModel::New(skel);
         REQUIRE_FALSE(model->m() == mInSkel);
-    }
-}
-
-TEST_CASE(
-    "Unconfigured reflection system supports attributes of UI element members",
-    "[cavity][serial]") {
-    auto skeleton = Reflect::reflect<uiModel, false>::schema(dictionary::null);
-    SECTION("uiElement members report description") {
-        CHECK(skeleton.subDict("m").found("description"));
-    }
-    SECTION("uiElement members report min if available") {
-        CHECK(skeleton.subDict("m").found("min"));
-        REQUIRE(skeleton.subDict("m").get<string>("min") == "10");
-    }
-    SECTION("uiElement members report max if available") {
-        CHECK(skeleton.subDict("m").found("max"));
-        REQUIRE(skeleton.subDict("m").get<string>("max") == "20");
-    }
-}
-
-TEST_CASE(
-    "Configured reflection system supports attributes of UI element members",
-    "[cavity][serial]") {
-    word childModel = GENERATE(as<word>(), "uiChildModel");
-    dictionary childConfig;
-    childConfig.set("uiModelType", childModel);
-    auto skeleton = Reflect::reflect<uiModel, true>::schema(childConfig);
-    autoPtr<uiModel> ui = uiModel::New(skeleton);
-    auto docsSkel = Reflect::reflect<uiModel, false>::schema(childConfig);
-    SECTION("uiElement members report default-constructed value") {
-        REQUIRE(ui->m() == skeleton.get<label>("m"));
-        REQUIRE(ui->ht() == skeleton.get<HashTable<word>>("ht"));
-    }
-    SECTION(
-        "child models report uiElement members of their own and of their "
-        "base") {
-        bool foundAllSubMembers = true;
-        for (auto e : {"name", "m", "dir", "ht", "ndc", "subModel"}) {
-            foundAllSubMembers = foundAllSubMembers and docsSkel.found(e);
-        }
-        CHECK(foundAllSubMembers);
     }
 }
