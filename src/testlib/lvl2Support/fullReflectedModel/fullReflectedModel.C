@@ -1,14 +1,14 @@
-#include "uiModel.H"
+#include "fullReflectedModel.H"
 
 namespace Foam {
 
 using Reflect::uiElement;
 
-defineTypeNameAndDebug(uiModel, 0);
-defineRunTimeSelectionTable(uiModel, dictionary);
-defineSchemaTable(uiModel);
+defineTypeNameAndDebug(fullReflectedModel, 0);
+defineRunTimeSelectionTable(fullReflectedModel, dictionary);
+defineSchemaTable(fullReflectedModel);
 
-uiModel::uiModel(
+fullReflectedModel::fullReflectedModel(
     const dictionary& dict)
     : dict_(dict)
     , name_(
@@ -21,26 +21,26 @@ uiModel::uiModel(
 {
 }
 
-autoPtr<uiModel>
-uiModel::New(
+autoPtr<fullReflectedModel>
+fullReflectedModel::New(
     const dictionary& dict)
 {
     const word modelType(dict.get<word>(typeName + "Type"));
 
-    Info << "Selecting uiModel model " << modelType << endl;
+    Info << "Selecting fullReflectedModel model " << modelType << endl;
 
     auto cstrIter = dictionaryConstructorTablePtr_->cfind(modelType);
 
     if (!cstrIter.found()) {
         FatalIOErrorInLookup(
             dict,
-            "uiModelType",
+            "fullReflectedModelType",
             modelType,
             *dictionaryConstructorTablePtr_)
             << exit(FatalIOError);
     }
 
-    return autoPtr<uiModel>(cstrIter()(dict));
+    return autoPtr<fullReflectedModel>(cstrIter()(dict));
 }
 
 } /// !namespace Foam

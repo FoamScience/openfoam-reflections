@@ -1,5 +1,5 @@
-#ifndef origOpenFOAMModel_H
-#define origOpenFOAMModel_H
+#ifndef basicReflectedModel_H
+#define basicReflectedModel_H
 
 #include "HashTable.H"
 #include "autoPtr.H"
@@ -16,7 +16,7 @@ namespace Foam {
 /// while having minimal dependencies but default-constructing
 /// most of its members
 /// @output_section author:elwardi
-class origOpenFOAMModel {
+class basicReflectedModel {
 protected:
     /// Configuration dictionary
     const dictionary& dict_;
@@ -38,42 +38,42 @@ protected:
 
 public:
     /// Runtime type name
-    TypeName("origOpenFOAMModel");
+    TypeName("basicReflectedModel");
 
-    /// @brief RunTime selection table for origOpenFOAMModels
+    /// @brief RunTime selection table for basicReflectedModels
     declareRunTimeSelectionTable(autoPtr,
-        origOpenFOAMModel,
+        basicReflectedModel,
         dictionary,
         (const dictionary& dict),
         (dict));
 
-    /// @brief Schema table for origOpenFOAMModels
+    /// @brief Schema table for basicReflectedModels
     /// @param first argument is base class type
     /// @param second argument is the schamfunction name from Reflect::reflect<T> (schema)
     /// @param third argument is return type of the schema function (dictionary)
-    declareSchemaTable(origOpenFOAMModel, schema, dictionary, (const dictionary&));
+    declareSchemaTable(basicReflectedModel, schema, dictionary, (const dictionary&));
 
     /// Construct from dictionary
-    explicit origOpenFOAMModel(const dictionary& dict);
+    explicit basicReflectedModel(const dictionary& dict);
 
     /// Delete move construct
-    origOpenFOAMModel(origOpenFOAMModel&& other) = delete;
+    basicReflectedModel(basicReflectedModel&& other) = delete;
 
     /// Delete default copy construct
-    origOpenFOAMModel(const origOpenFOAMModel& other) = delete;
+    basicReflectedModel(const basicReflectedModel& other) = delete;
 
-    /// Destruct origOpenFOAMModels
-    virtual ~origOpenFOAMModel() { }
+    /// Destruct basicReflectedModels
+    virtual ~basicReflectedModel() { }
 
     /// @returns A dynamic clone of this model
-    virtual autoPtr<origOpenFOAMModel> clone() const = 0;
+    virtual autoPtr<basicReflectedModel> clone() const = 0;
 
     /// @returns the typename
     virtual word verifyType() const = 0;
 
     /// @returns The concrete model from dictionary
     /// as a pointer to base type
-    static autoPtr<origOpenFOAMModel> New(const dictionary& dict);
+    static autoPtr<basicReflectedModel> New(const dictionary& dict);
 
     /// @returns the configuration dictionary
     const dictionary& dict() const
@@ -88,18 +88,18 @@ public:
     }
 
     /// Deleted move assignment
-    origOpenFOAMModel& operator=(origOpenFOAMModel&& other) = delete;
+    basicReflectedModel& operator=(basicReflectedModel&& other) = delete;
 
     /// Deleted copy assignment
-    origOpenFOAMModel& operator=(const origOpenFOAMModel& other) = delete;
+    basicReflectedModel& operator=(const basicReflectedModel& other) = delete;
 
     /// Befriend typeinfo struct from reflection  backend
-    friend class refl_impl::metadata::type_info__<origOpenFOAMModel>;
+    friend class refl_impl::metadata::type_info__<basicReflectedModel>;
 };
 
 } /// !namespace Foam
 
-REFL_AUTO(type(Foam::origOpenFOAMModel),
+REFL_AUTO(type(Foam::basicReflectedModel),
           field(name_),
           field(m_),
           field(dir_),

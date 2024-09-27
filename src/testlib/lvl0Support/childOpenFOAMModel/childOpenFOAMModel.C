@@ -1,14 +1,14 @@
-#include "childRegularModel.H"
+#include "childOpenFOAMModel.H"
 #include "dictionary.H"
 
 namespace Foam {
 
 template <class T>
-childRegularModel<T>::childRegularModel
+childOpenFOAMModel<T>::childOpenFOAMModel
 (
     const dictionary& dict
 )
-    : regularModel<T>(dict),
+    : OpenFOAMModel<T>(dict),
       list_(2, T::zero) {}
 
 

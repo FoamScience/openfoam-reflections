@@ -1,9 +1,9 @@
 
-#include "childRegularModel.H"
+#include "childOpenFOAMModel.H"
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
-makeRegularModels(childRegularModel)
+makeRegularModels(childOpenFOAMModel)
 
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

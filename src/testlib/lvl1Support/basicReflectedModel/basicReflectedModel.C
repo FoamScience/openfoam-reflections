@@ -1,12 +1,12 @@
-#include "origOpenFOAMModel.H"
+#include "basicReflectedModel.H"
 
 namespace Foam {
 
-defineTypeNameAndDebug(origOpenFOAMModel, 0);
-defineRunTimeSelectionTable(origOpenFOAMModel, dictionary);
-defineSchemaTable(origOpenFOAMModel);
+defineTypeNameAndDebug(basicReflectedModel, 0);
+defineRunTimeSelectionTable(basicReflectedModel, dictionary);
+defineSchemaTable(basicReflectedModel);
 
-origOpenFOAMModel::origOpenFOAMModel(
+basicReflectedModel::basicReflectedModel(
     const dictionary& dict)
     : dict_(dict)
     , name_ { dict.found("name") ? new word(dict.get<string>("name")) : nullptr }
@@ -17,26 +17,26 @@ origOpenFOAMModel::origOpenFOAMModel(
 {
 }
 
-autoPtr<origOpenFOAMModel>
-origOpenFOAMModel::New(
+autoPtr<basicReflectedModel>
+basicReflectedModel::New(
     const dictionary& dict)
 {
     const word modelType(dict.get<word>(typeName+"Type"));
 
-    Info << "Selecting origOpenFOAMModel model " << modelType << endl;
+    Info << "Selecting basicReflectedModel model " << modelType << endl;
 
     auto cstrIter = dictionaryConstructorTablePtr_->cfind(modelType);
 
     if (!cstrIter.found()) {
         FatalIOErrorInLookup(
             dict,
-            "origOpenFOAMModelType",
+            "basicReflectedModelType",
             modelType,
             *dictionaryConstructorTablePtr_)
             << exit(FatalIOError);
     }
 
-    return autoPtr<origOpenFOAMModel>(cstrIter()(dict));
+    return autoPtr<basicReflectedModel>(cstrIter()(dict));
 }
 
 } /// !namespace Foam

@@ -1,14 +1,14 @@
-#ifndef origChild2Model_H
-#define origChild2Model_H
+#ifndef child2BasicReflectedModel_H
+#define child2BasicReflectedModel_H
 
-#include "origOpenFOAMModel.H"
+#include "basicReflectedModel.H"
 
 namespace Foam {
 
 /// @brief a child model mimiking original OpenFOAM child models
 /// and keeping an optional subModel that participates in RTS
 /// @output_section author:elwardi
-class origChild2Model : public origOpenFOAMModel {
+class child2BasicReflectedModel : public basicReflectedModel {
 protected:
     /// This member wil not be reflected
     dictionary someDict_;
@@ -18,16 +18,16 @@ protected:
 
 public:
     /// Runtime type name
-    TypeName("origChild2Model");
+    TypeName("child2BasicReflectedModel");
 
     /// Construct from dictionary
-    explicit origChild2Model(const dictionary& dict);
+    explicit child2BasicReflectedModel(const dictionary& dict);
 
-    /// Destruct origChild2Models
-    virtual ~origChild2Model() = default;
+    /// Destruct child2BasicReflectedModels
+    virtual ~child2BasicReflectedModel() = default;
 
-    /// Update origChild2Model
-    virtual autoPtr<origOpenFOAMModel> clone() const;
+    /// Update child2BasicReflectedModel
+    virtual autoPtr<basicReflectedModel> clone() const;
 
     /// Verify type name
     virtual word verifyType() const {
@@ -35,12 +35,12 @@ public:
     }
 
     /// Befriend typeinfo for this class
-    friend class refl_impl::metadata::type_info__<origChild2Model>;
+    friend class refl_impl::metadata::type_info__<child2BasicReflectedModel>;
 };
 
 } // !namspace Foam
 
-REFL_AUTO(type(Foam::origChild2Model, bases<Foam::origOpenFOAMModel>),
+REFL_AUTO(type(Foam::child2BasicReflectedModel, bases<Foam::basicReflectedModel>),
           field(labels_))
 
 #endif

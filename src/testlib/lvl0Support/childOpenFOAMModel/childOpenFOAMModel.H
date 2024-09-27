@@ -1,7 +1,7 @@
-#ifndef childRegularModel_H
-#define childRegularModel_H
+#ifndef childOpenFOAMModel_H
+#define childOpenFOAMModel_H
 
-#include "regularModel.H"
+#include "OpenFOAMModel.H"
 
 namespace Foam {
 
@@ -9,29 +9,29 @@ namespace Foam {
 /// with no reflection support what's so ever
 /// @output_section author:elwardi
 template<class T>
-class childRegularModel : public regularModel<T> {
+class childOpenFOAMModel : public OpenFOAMModel<T> {
 protected:
     // list of T items
     List<T> list_;
 
 public:
     /// Runtime type name
-    TypeName("childRegularModel");
+    TypeName("childOpenFOAMModel");
 
     /// Construct from dictionary
-    explicit childRegularModel(const dictionary& dict);
+    explicit childOpenFOAMModel(const dictionary& dict);
 
     /// Delete move construct
-    childRegularModel(childRegularModel&& other) = delete;
+    childOpenFOAMModel(childOpenFOAMModel&& other) = delete;
 
     /// Delete default copy construct
-    childRegularModel(const childRegularModel& other) = delete;
+    childOpenFOAMModel(const childOpenFOAMModel& other) = delete;
 
-    /// Destruct childRegularModels
-    virtual ~childRegularModel() { }
+    /// Destruct childOpenFOAMModels
+    virtual ~childOpenFOAMModel() { }
 
     /// @returns A dynamic clone of this model
-    virtual autoPtr<regularModel<T>> clone() const { return nullptr; }
+    virtual autoPtr<OpenFOAMModel<T>> clone() const { return nullptr; }
 
     /// @returns the typename
     virtual word verifyType() const {
@@ -39,10 +39,10 @@ public:
     }
 
     /// Deleted move assignment
-    childRegularModel& operator=(childRegularModel&& other) = delete;
+    childOpenFOAMModel& operator=(childOpenFOAMModel&& other) = delete;
 
     /// Deleted copy assignment
-    childRegularModel& operator=(const childRegularModel& other) = delete;
+    childOpenFOAMModel& operator=(const childOpenFOAMModel& other) = delete;
 };
 
 } /// !namespace Foam
@@ -51,6 +51,6 @@ public:
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 #ifdef NoRepository
-    #include "childRegularModel.C"
+    #include "childOpenFOAMModel.C"
 #endif
 #endif

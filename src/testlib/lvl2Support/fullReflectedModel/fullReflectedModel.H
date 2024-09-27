@@ -1,5 +1,5 @@
-#ifndef uiModel_H
-#define uiModel_H
+#ifndef fullReflectedModel_H
+#define fullReflectedModel_H
 
 #include "HashTable.H"
 #include "autoPtr.H"
@@ -17,7 +17,7 @@ using Reflect::uiElement;
 
 /// @brief Base class taking advantage of uiElements
 /// @output_section author:elwardi
-class uiModel {
+class fullReflectedModel {
 protected:
     /// Configuration dictionary
     dictionary dict_;
@@ -25,7 +25,7 @@ protected:
     /// optional model name
     uiElement<autoPtr<word>,
         withDefault(nullptr),
-        withDescription("name of uiModel")
+        withDescription("name of fullReflectedModel")
     > name_;
 
     /// m coefficient
@@ -58,42 +58,42 @@ protected:
 
 public:
     /// Runtime type name
-    TypeName("uiModel");
+    TypeName("fullReflectedModel");
 
-    /// @brief RunTime selection table for uiModels
+    /// @brief RunTime selection table for fullReflectedModels
     declareRunTimeSelectionTable(autoPtr,
-        uiModel,
+        fullReflectedModel,
         dictionary,
         (const dictionary& dict),
         (dict));
 
-    /// @brief Schema table for uiModels
+    /// @brief Schema table for fullReflectedModels
     /// @param first argument is base class type
     /// @param second argument is the schamfunction name from Reflect::reflect<T> (schema)
     /// @param third argument is return type of the schema function (dictionary)
-    declareSchemaTable(uiModel, schema, dictionary, (const dictionary&));
+    declareSchemaTable(fullReflectedModel, schema, dictionary, (const dictionary&));
 
     /// Construct from dictionary
-    explicit uiModel(const dictionary& dict);
+    explicit fullReflectedModel(const dictionary& dict);
 
     /// Delete move construct
-    uiModel(uiModel&& other) = delete;
+    fullReflectedModel(fullReflectedModel&& other) = delete;
 
     /// Delete default copy construct
-    uiModel(const uiModel& other) = delete;
+    fullReflectedModel(const fullReflectedModel& other) = delete;
 
-    /// Destruct uiModels
-    virtual ~uiModel() { }
+    /// Destruct fullReflectedModels
+    virtual ~fullReflectedModel() { }
 
     /// @returns A dynamic clone of this model
-    virtual autoPtr<uiModel> clone() const = 0;
+    virtual autoPtr<fullReflectedModel> clone() const = 0;
 
     /// @returns the typename
     virtual word verifyType() const = 0;
 
     /// @returns The concrete model from dictionary
     /// as a pointer to base type
-    static autoPtr<uiModel> New(const dictionary& dict);
+    static autoPtr<fullReflectedModel> New(const dictionary& dict);
 
     /// @returns the configuration dictionary
     const dictionary& dict() const
@@ -114,18 +114,18 @@ public:
     }
 
     /// Deleted move assignment
-    uiModel& operator=(uiModel&& other) = delete;
+    fullReflectedModel& operator=(fullReflectedModel&& other) = delete;
 
     /// Deleted copy assignment
-    uiModel& operator=(const uiModel& other) = delete;
+    fullReflectedModel& operator=(const fullReflectedModel& other) = delete;
 
     /// Befriend typeinfo struct from reflection  backend
-    friend class refl_impl::metadata::type_info__<uiModel>;
+    friend class refl_impl::metadata::type_info__<fullReflectedModel>;
 };
 
 } /// !namespace Foam
 
-REFL_AUTO(type(Foam::uiModel),
+REFL_AUTO(type(Foam::fullReflectedModel),
           field(name_),
           field(m_),
           field(dir_),
