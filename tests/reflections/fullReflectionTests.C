@@ -17,41 +17,76 @@ extern Time* timePtr;
 extern argList* argsPtr;
 
 TEST_CASE(
-    "Unconfigured reflection system supports attributes of UI element members",
+    "Unconfigured refletion supports fully reflectable OpenFOAM classes "
+    "both in constructive and documentation modes",
     "[cavity][serial]") {
-    auto skeleton = Reflect::reflect<fullReflectedModel, false>::schema(dictionary::null);
-    SECTION("uiElement members report description") {
-        CHECK(skeleton.subDict("m").found("description"));
+
+    // Construct skeleton dictionary for docs
+    auto docsSkeleton =
+        Reflect::reflect<fullReflectedModel, false>::schema(dictionary::null);
+    auto constructibleSkeleton =
+        Reflect::reflect<fullReflectedModel, true>::schema(dictionary::null);
+
+    SECTION("uiElement members report their descriptions") {
+        CHECK(docsSkeleton.subDict("m").found("description"));
     }
+
     SECTION("uiElement members report min if available") {
-        CHECK(skeleton.subDict("m").found("min"));
-        REQUIRE(skeleton.subDict("m").get<string>("min") == "10");
+        CHECK(docsSkeleton.subDict("m").found("min"));
+        REQUIRE(docsSkeleton.subDict("m").get<string>("min") == "10");
     }
+
     SECTION("uiElement members report max if available") {
-        CHECK(skeleton.subDict("m").found("max"));
-        REQUIRE(skeleton.subDict("m").get<string>("max") == "20");
+        CHECK(docsSkeleton.subDict("m").found("max"));
+        REQUIRE(docsSkeleton.subDict("m").get<string>("max") == "20");
     }
+
 }
 
 TEST_CASE(
-    "Configured reflection system supports attributes of UI element members",
+    "Configured refletion supports fully reflectable OpenFOAM classes "
+    "both in constructive and documentation modes",
     "[cavity][serial]") {
-    word childModel = GENERATE(as<word>(), "childFullReflectedModel");
-    dictionary childConfig;
-    childConfig.set("fullReflectedModelType", childModel);
-    auto skeleton = Reflect::reflect<fullReflectedModel, true>::schema(childConfig);
-    autoPtr<fullReflectedModel> ui = fullReflectedModel::New(skeleton);
-    auto docsSkel = Reflect::reflect<fullReflectedModel, false>::schema(childConfig);
-    SECTION("uiElement members report default-constructed value") {
-        REQUIRE(ui->m() == skeleton.get<label>("m"));
-        REQUIRE(ui->ht() == skeleton.get<HashTable<word>>("ht"));
+
+    dictionary reflectionConfig;
+    auto toc = fullReflectedModel::dictionaryConstructorTablePtr_->toc();
+    auto concreteType = GENERATE_REF(from_range(toc.begin(), toc.end()));
+    word key = fullReflectedModel::typeName+"Type";
+    reflectionConfig.set<string>(key, concreteType);
+
+    auto constructibleSkeleton =
+        Reflect::reflect<fullReflectedModel, true>::schema(reflectionConfig);
+    autoPtr<fullReflectedModel> ui = fullReflectedModel::New(constructibleSkeleton);
+
+    auto docsSkeleton =
+        Reflect::reflect<fullReflectedModel, false>::schema(reflectionConfig);
+
+    SECTION("uiElement members report the default-constructed value") {
+        OStringStream oss;
+        REQUIRE(ui->m() == constructibleSkeleton.get<label>("m"));
+        REQUIRE(Foam::name(ui->m()) == docsSkeleton.subDict("m").get<string>("default"));
+        REQUIRE(ui->dir() == constructibleSkeleton.get<vector>("dir"));
+        oss.reset();
+        oss << ui->dir();
+        REQUIRE(oss.str() == docsSkeleton.subDict("dir").get<string>("default"));
+        oss.reset();
+        oss << ui->ht();
+        REQUIRE(ui->ht() == constructibleSkeleton.get<HashTable<word>>("ht"));
+        REQUIRE(oss.str() == docsSkeleton.subDict("ht").get<string>("default"));
     }
-    SECTION(
-        "child models report uiElement members of their own and of their "
-        "base") {
+
+    SECTION("uiElement members report changed values from defaults") {
+        constructibleSkeleton.set("m", 1111);
+        constructibleSkeleton.set("dir", vector{0,0,1});
+        autoPtr<fullReflectedModel> nonStandardUI = fullReflectedModel::New(constructibleSkeleton);
+        REQUIRE(nonStandardUI->m() == constructibleSkeleton.get<label>("m"));
+        REQUIRE(nonStandardUI->dir() == constructibleSkeleton.get<vector>("dir"));
+    }
+
+    SECTION("child models report uiElement members of their own and of their base") {
         bool foundAllSubMembers = true;
         for (auto e : {"name", "m", "dir", "ht", "ndc", "subModel"}) {
-            foundAllSubMembers = foundAllSubMembers and docsSkel.found(e);
+            foundAllSubMembers = foundAllSubMembers and docsSkeleton.found(e);
         }
         CHECK(foundAllSubMembers);
     }

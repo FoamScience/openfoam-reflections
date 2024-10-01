@@ -17,39 +17,49 @@ extern Time* timePtr;
 extern argList* argsPtr;
 
 TEST_CASE(
-    "Unconfigured Refletion supports basic patterns for OpenFOAM "
-    "class member types both in constructive and documentation modes",
+    "Unconfigured refletion supports basic reflectable OpenFOAM classes "
+    "both in constructive and documentation modes",
     "[cavity][serial]") {
+
+    // Construct skeleton dictionaries for docs/construction
     auto constructibleSkeleton =
         Reflect::reflect<basicReflectedModel, true>::schema(dictionary::null);
-    auto skeleton =
+    auto docsSkeleton =
         Reflect::reflect<basicReflectedModel, false>::schema(dictionary::null);
-    SECTION("non constexpr default-constructible reports compiler default") {
+
+    SECTION("compiler defaults are reported for non constexpr default-constructible types") {
         CHECK_FALSE(constructibleSkeleton.get<label>("m") == 15);
         REQUIRE(constructibleSkeleton.get<label>("m") == label());
     }
-    SECTION("non constexpr, not-default-constructible reports empty value") {
-        REQUIRE(skeleton.subDict("ndc").get<string>("type") ==
+
+    SECTION("empty values are reported for non constexpr non default-constructible types") {
+        REQUIRE(docsSkeleton.subDict("ndc").get<string>("type") ==
                 string("Foam::OFstream"));
     }
-    SECTION("pointer types report onDemand tag and defaults underlying type") {
-        REQUIRE(skeleton.subDict("name").get<string>("type").startsWith(
+
+    SECTION("onDemand tag and defaults underlying type are reported for pointer types") {
+        REQUIRE(docsSkeleton.subDict("name").get<string>("type").startsWith(
             "<<onDemand>>"));
-        REQUIRE(skeleton.subDict("name").get<string>("type").endsWith(
+        REQUIRE(docsSkeleton.subDict("name").get<string>("type").endsWith(
             "Foam::word"));
     }
-    SECTION("RTS options get reported for a base model class") {
+
+    SECTION("RTS options are reported for a base model class") {
         auto tp = basicReflectedModel::typeName + "Type";
-        const auto& sub = skeleton.subDict(tp);
+        const auto& sub = docsSkeleton.subDict(tp);
         REQUIRE(sub.get<string>("default").startsWith("\"<<RTSoption>>"));
         REQUIRE(sub.get<string>("default").endsWith(
             "( child2BasicReflectedModel child1BasicReflectedModel )\""));
+        REQUIRE(constructibleSkeleton.get<string>(tp).startsWith("\"<<RTSoption>>"));
+        REQUIRE(constructibleSkeleton.get<string>(tp).endsWith(
+            "( child2BasicReflectedModel child1BasicReflectedModel )\""));
     }
+
 }
 
 TEST_CASE(
-    "Configured docs-mode Refletion system fetches all concrete class members "
-    "in an RTS",
+    "Configured refletion supports basic reflectable abstract RTS OpenFOAM classes "
+    "both in documentation mode",
     "[cavity][serial]") {
     dictionary childConfig;
     childConfig.set("basicReflectedModelType", "child2BasicReflectedModel");
@@ -74,8 +84,8 @@ TEST_CASE(
 }
 
 TEMPLATE_TEST_CASE_SIG(
-    "Configured Refletion system supports nested concrete "
-    "RTS models in constructive and docs mode",
+    "Configured refletion supports basic reflectable concrete RTS OpenFOAM classes "
+    "both in documentation mode",
     "[cavity][serial]",
     ((bool mode), mode),
     false,
@@ -98,19 +108,26 @@ TEST_CASE(
     "Unconfigured reflection system is able to build concrete objects "
     "without explicit headers inclusion",
     "[cavity][serial]") {
-    word childModel =
-        GENERATE(as<word>(), "child1BasicReflectedModel", "child2BasicReflectedModel");
-    dictionary childConfig;
-    childConfig.set("basicReflectedModelType", childModel);
-    if (childModel == "child1BasicReflectedModel")
-        childConfig.set("subModelType", "child2BasicReflectedModel");
-    auto skel = Reflect::reflect<basicReflectedModel, true>::schema(childConfig);
+
+    dictionary reflectionConfig;
+    auto toc = basicReflectedModel::dictionaryConstructorTablePtr_->toc();
+    auto concreteType = GENERATE_REF(from_range(toc.begin(), toc.end()));
+    word key = basicReflectedModel::typeName+"Type";
+    reflectionConfig.set<string>(key, concreteType);
+    if (concreteType == "child1BasicReflectedModel")
+        reflectionConfig.set("subModelType", "child2BasicReflectedModel");
+
+    auto skel = Reflect::reflect<basicReflectedModel, true>::schema(reflectionConfig);
+
     SECTION("typeName matches the concrete type") {
         autoPtr<basicReflectedModel> model = basicReflectedModel::New(skel);
-        REQUIRE(model->verifyType() == childModel);
+        REQUIRE(model->verifyType() == concreteType);
     }
-    SECTION("But default-constructed member values do not match skeletons") {
+
+    SECTION("default-constructed members do not match values in skeleton") {
         label mInSkel(skel.get<label>("m"));
+        // REMOVE m from skeleton so "standard initialization for m"
+        // takes place
         skel.remove("m");
         autoPtr<basicReflectedModel> model = basicReflectedModel::New(skel);
         REQUIRE_FALSE(model->m() == mInSkel);
