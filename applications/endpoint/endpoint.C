@@ -114,7 +114,7 @@ main(int argc, char* argv[])
         Info<< config << endl;
         return crow::response(reflectAndBuildClassInfo<fullReflectedModel>(config));
     });
-    CROW_ROUTE(app, "/classes/config/uiModel").methods("POST"_method)
+    CROW_ROUTE(app, "/classes/config/fullReflectedModel").methods("POST"_method)
     (postHandle);
 
     // Reset config

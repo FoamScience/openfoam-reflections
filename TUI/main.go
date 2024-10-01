@@ -345,7 +345,7 @@ func (m Model) updateModelForSelectedItem(selectedKey string) (Model, tea.Cmd) {
 	postURL := m.baseURL + "config/" + selectedKey
 	resp, err := http.Post(postURL, "application/json", bytes.NewBuffer(jsonPayload))
 	if err != nil {
-		log.Fatalf("Error posting data to %s: %v", postURL, err)
+		log.Fatalf("Error posting %v to %s: %v", m.jsonObject, postURL, err)
 	}
 	defer resp.Body.Close()
 
@@ -411,9 +411,11 @@ func renderItems(items map[string]Item, keys []string, cursor int, showMenu bool
 		}
 		s += indent
 		if len(item.RTSOptions) > 0 && currentIndex == cursor {
-			s += fmt.Sprintf("%s - %s - %s %v", bold.Render(key), gray.Render(item.Description), blue.Render("options:"), nonEmptyValues(item.RTSOptions, boldRed))
+            ii := fmt.Sprintf("%d", menuSelection+1)
+            ni := fmt.Sprintf("%d", len(item.RTSOptions))
+			s += fmt.Sprintf("%s - %s - %s %s/%s ", bold.Render(key), gray.Render(item.Description), blue.Render("selected:"), boldGreen.Render(ii), bold.Render(ni))
 			if showMenu {
-				s += fmt.Sprintf(" (%s)", menuOptions[menuSelection])
+				s += "( " + boldRed.Render(menuOptions[menuSelection]) + " )"
 			}
 			s += "\n"
 		} else {
