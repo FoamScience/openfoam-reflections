@@ -10,6 +10,7 @@
 #include "dictionary.H"
 #include "refl.H"
 #include "reflectConcepts.H"
+#include "reflectionSchemaTable.H"
 #include "uiElement.H"
 #ifdef __GNUG__
 #include <cxxabi.h>
@@ -54,6 +55,9 @@ struct _detail {
     }
 };
 
+template <class WrappedType> struct wrapAbstract;
+template <class WrappedType> struct wrapImpl;
+
 /// @brief Utilities for generating skeleton dictionaries for classes
 template <class T, bool Constructible = false>
 struct reflect {
@@ -95,6 +99,7 @@ struct reflect {
     /// @return A string, listing available RTS options
     template <DictionaryRTSModelBase U>
     static word getRTSOptions() {
+        // TODO: maybe use a better seperator than whitespace?
         word options = "\"<<RTSoption>> ( ";
         for (auto& e : U::dictionaryConstructorTablePtr_->toc()) {
             options += e + " ";
@@ -183,7 +188,7 @@ struct reflect {
                 skeleton = T::schemasPtr_->operator[](delegateType)(config);
             } else {
                 if constexpr (Constructible) {
-                    skeleton.set(typeKey, getRTSOptions<pureTypeName>());
+                    skeleton.set<string>(typeKey, getRTSOptions<pureTypeName>());
                 } else {
                     dictionary typeDict;
                     typeDict.set<string>("type", typeKey);
@@ -205,12 +210,22 @@ struct reflect {
                 if constexpr (Constructible)
                     delegateType += "Construct";
                 skeleton = T::schemasPtr_->operator[](delegateType)(config);
+                if constexpr (Constructible) {
+                    if (!skeleton.found(typeKey)) {
+                        skeleton.set<string>(typeKey, config.get<word>(typeKey));
+                    }
+                } else {
+                    dictionary typeDict;
+                    typeDict.set<string>("type", typeKey);
+                    typeDict.set<string>("default", config.get<word>(typeKey));
+                    skeleton.subDictOrAdd(string(typeKey)) = typeDict;
+                }
             } else {
                 if constexpr (DictionaryRTSModelBase<wrappedType>)
                 {
                     auto opts = getRTSOptions<wrappedType>();
                     if constexpr (Constructible) {
-                        skeleton.set(typeKey, opts);
+                        skeleton.set<string>(typeKey, opts);
                     } else {
                         dictionary typeDict;
                         typeDict.set<string>("type", typeKey);
@@ -226,7 +241,9 @@ struct reflect {
         // if it's a concrete model for an RTS type, set type to typename
         for_each(refl::util::reflect_types(type.bases), [&](auto bs) {
             using baseType = typename decltype(bs)::type;
-            if constexpr (DictionaryRTSModelImpl<baseType, pureTypeName>) {
+            if constexpr (
+                DictionaryRTSModelImpl<baseType, pureTypeName>
+            ) {
                 if constexpr (Constructible) {
                     skeleton.set(word(baseType::typeName + "Type"),
                                  pureTypeName::typeName);
@@ -311,10 +328,79 @@ struct reflect<T, Constructible> {
         }
         return skeleton;
     }
+
+    static dictionary schema(const dictionary& config) {
+        using elementType = T::element_type;
+        return reflect<elementType, Constructible>::schema(config);
+    }
+};
+
+template <class WrappedType>
+struct wrapAbstract : public WrappedType {
+    /// @brief The type to be wrapped for reflection
+    using wrappedType = WrappedType;
+
+    /// delegate typename
+    TypeName(WrappedType::typeName_());
+
+    /// Generic schema table
+    declareSchemaTable(wrapAbstract, schema, dictionary, (const dictionary&));
+
+    /// Construct from dictionary
+    explicit wrapAbstract(const dictionary& dict);
+
+    /// Destruct wrapperModels
+    virtual ~wrapAbstract() {}
+
+    /// Befriend typeinfo struct from reflection backend
+    //friend class refl_impl::metadata::type_info__<WrappedType>;
+    friend class refl_impl::metadata::type_info__<wrapAbstract<WrappedType>>;
+};
+
+template <class WrappedType>
+struct wrapImpl : public wrapAbstract<WrappedType> {
+
+    /// delegate typename
+    TypeName(WrappedType::typeName_());
+
+    /// Construct from dictionary
+    explicit wrapImpl(const dictionary& dict);
+
+    /// Destruct wrapperModels
+    virtual ~wrapImpl() {}
+
+    /// Befriend typeinfo struct from reflection backend
+    //friend class refl_impl::metadata::type_info__<WrappedType>;
+    friend class refl_impl::metadata::type_info__<wrapImpl<WrappedType>>;
+};
+
+// @brief Specialization of member schema for pointer types
+template <NonReflectableRTSModel T, bool Constructible>
+struct reflect<T, Constructible> {
+    static dictionary& memberSchema(dictionary& skeleton,
+                                    const word& memberKey,
+                                    const dictionary& config) {
+        using wrappedType = Reflect::wrapAbstract<T>;
+        return reflect<wrappedType, Constructible>::memberSchema(skeleton, memberKey, config);
+    }
+    static dictionary schema(const dictionary& config) {
+        using wrappedType = Reflect::wrapAbstract<T>;
+        return reflect<wrappedType, Constructible>::schema(config);
+    }
 };
 
 }  // namespace Reflect
 
 }  // namespace Foam
+
+#define wrapReflectImplementedModel(Base, Child, Targ)                         \
+                                                                               \
+    namespace Foam                                                             \
+    {                                                                          \
+        Reflect::wrapAbstract<Base<Targ>>::addSchemaToTable                    \
+            <Reflect::wrapImpl<Child<Targ>>>                                   \
+            add##Child##Targ##SchemaToSchemaTable                              \
+            ( Child<Targ>::typeName );                                         \
+    }
 
 #endif

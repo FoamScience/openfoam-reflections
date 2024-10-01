@@ -115,6 +115,18 @@ template <typename T>
 concept WrapperDictionaryRTSBase = requires {
     DictionaryRTSModelBase<typename T::wrappedType>;
 };
+template <typename T, typename U>
+concept WrapperDictionaryRTSImpl = requires {
+    DictionaryRTSModelImpl<typename T::wrappedType, typename U::wrappedType>;
+};
+
+
+/// @breif A concept for non-reflectable types
+template <typename T>
+concept Reflectable = SomePtr<T> || refl::trait::is_reflectable_v<T>;
+
+template <typename T>
+concept NonReflectableRTSModel = !(Reflectable<T>) && DictionaryRTSModel<T>;
 
 } // namespace Reflect
 

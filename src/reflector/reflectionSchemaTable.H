@@ -3,7 +3,6 @@
 
 #include "refl.H"
 #include "reflectConcepts.H"
-#include "reflectDictionary.H"
 
 namespace Foam {
 
@@ -20,20 +19,19 @@ namespace Foam {
     static void destroySchemaTables();                                         \
                                                                                \
     /* Subclass to add a schema to the table */                                \
-    /* TODO: better T name to avoid shadowing */                               \
     /* template<Reflect::SelfReflectableModel T> */                            \
-    template <class T> struct addSchemaToTable {                               \
+    template <class tT> struct addSchemaToTable {                              \
         /* Constructor adding schema builder function to table */              \
         explicit addSchemaToTable(const word &lookup = baseType::typeName) {   \
             constructSchemaTables();                                           \
             if (!schemasPtr_->insert(lookup,                                   \
-                                     Reflect::reflect<T, false>::funcName)) {  \
+                                     Reflect::reflect<tT, false>::funcName)) { \
                 FatalErrorInFunction << "Duplicate entry for " << lookup       \
                                      << " in schema table."                    \
                                      << exit(FatalError);                      \
             };                                                                 \
             if (!schemasPtr_->insert(lookup + "Construct",                     \
-                                     Reflect::reflect<T, true>::funcName)) {   \
+                                     Reflect::reflect<tT, true>::funcName)) {  \
                 FatalErrorInFunction << "Duplicate entry for " << lookup       \
                                      << " in schema table."                    \
                                      << exit(FatalError);                      \
