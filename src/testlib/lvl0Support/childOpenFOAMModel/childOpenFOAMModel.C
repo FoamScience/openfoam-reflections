@@ -4,12 +4,7 @@
 namespace Foam {
 
 template <class T>
-childOpenFOAMModel<T>::childOpenFOAMModel
-(
-    const dictionary& dict
-)
-    : OpenFOAMModel<T>(dict),
-      list_(2, T::zero) {}
-
+childOpenFOAMModel<T>::childOpenFOAMModel(const dictionary& dict)
+    : OpenFOAMModel<T>(dict), list_(2, T::zero), someDict_(dictionary::null) {}
 
 }  // namespace Foam

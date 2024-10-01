@@ -14,6 +14,9 @@ protected:
     // list of T items
     List<T> list_;
 
+    // child-specific dictionary 
+    dictionary someDict_;
+
 public:
     /// Runtime type name
     TypeName("childOpenFOAMModel");

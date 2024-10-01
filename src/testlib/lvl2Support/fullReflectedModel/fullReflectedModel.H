@@ -113,6 +113,12 @@ public:
         return ht_;
     }
 
+    /// @returns dir
+    vector dir() const
+    {
+        return dir_;
+    }
+
     /// Deleted move assignment
     fullReflectedModel& operator=(fullReflectedModel&& other) = delete;
 
