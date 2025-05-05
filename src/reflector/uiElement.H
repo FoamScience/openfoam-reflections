@@ -10,19 +10,18 @@ namespace Foam {
 
 namespace Reflect {
 
-/// @brief class members with full reflection support
-/// @output_section author:Elwardi
+// @brief class members with full reflection support
 template <class T, auto InitFunc,
           auto DescFunc, // = []() { return "No description"; },
           auto MinFunc = nullptr, auto MaxFunc = nullptr>
 struct uiElement {
-    /// @brief actual type of member
+    // @brief actual type of member
     using valueType = T;
 
-    /// @brief default value for member
-    /// @returns a T, as value
-    /// @note It seems returning an auto will cause problems with type
-    /// compatibility
+    // @brief default value for member
+    // @returns a T, as value
+    // @note It seems returning an auto will cause problems with type
+    // compatibility
     static constexpr T init() {
         // if constexpr (std::is_convertible_v<decltype(InitFunc()), T>) {
         return T(InitFunc());
@@ -35,27 +34,27 @@ struct uiElement {
         //}
     }
 
-    /// @brief member description
+    // @brief member description
     static constexpr std::string_view descr() { return DescFunc(); }
 
-    /// @brief member value
+    // @brief member value
     T v;
 
-    /// @brief default constructor
+    // @brief default constructor
     uiElement() : v(init()) {}
 
-    /// @brief construct from dict value using default
+    // @brief construct from dict value using default
     uiElement(const dictionary &c, const word &key)
         : v(c.getOrDefault<T>(key, init())) {}
 
-    /// @brief construct from returned value if Pred is true, otherwise from
-    /// default
+    // @brief construct from returned value if Pred is true, otherwise from
+    // default
     template <class Ret, class Pred>
         requires std::invocable<Pred> &&
                  std::convertible_to<std::invoke_result_t<Pred>, bool>
     uiElement(Ret ret, Pred pred) : v(pred() ? ret() : init()) {}
 
-    /// @brief member min
+    // @brief member min
     template <typename U = T>
         requires(MinFunc != nullptr &&
                  std::convertible_to<decltype(MinFunc()), U>)
@@ -63,7 +62,7 @@ struct uiElement {
         return MinFunc();
     }
 
-    /// @brief member max
+    // @brief member max
     template <typename U = T>
         requires(MaxFunc != nullptr &&
                  std::convertible_to<decltype(MaxFunc()), U>)
@@ -71,7 +70,7 @@ struct uiElement {
         return MaxFunc();
     }
 
-    /// @brief convert to T
+    // @brief convert to T
     operator T() const { return v; }
 };
 

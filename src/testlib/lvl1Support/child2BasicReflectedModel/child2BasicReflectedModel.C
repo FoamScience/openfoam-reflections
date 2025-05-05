@@ -20,4 +20,4 @@ autoPtr<basicReflectedModel> child2BasicReflectedModel::clone() const
     return nullptr;
 }
 
-} /// !namespace Foam
+} // !namespace Foam

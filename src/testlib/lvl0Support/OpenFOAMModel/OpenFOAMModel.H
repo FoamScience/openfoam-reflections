@@ -11,83 +11,84 @@
 
 namespace Foam {
 
-/// @brief Base class mimiking a standard OpenFOAM model
-/// with no reflection support what's so ever
-/// @output_section author:elwardi
+// @brief Base class mimiking a standard OpenFOAM model
+// with no reflection support what's so ever except
+// having a static `::New` that takes a dictionary as
+// first argument
 template<class T>
 class OpenFOAMModel {
 protected:
-    /// Configuration dictionary
+    // Refular configuration dictionary
     const dictionary& dict_;
 
-    /// optional model name
+    // optional model name
     autoPtr<word> name_;
 
-    /// m coefficient
+    // The mass as in $E = m c^2$
     T m_;
 
-    /// vector
+    // A Foam::vector is strickly a runtime property
     vector dir_;
 
-    /// HashTable of words
+    // HashTable of words
     HashTable<word> ht_;
 
-    /// A not-default-constructible member
+    // A not-default-constructible member
     OFstream ndc_;
 
 public:
-    /// Runtime type name
+    // Runtime type name
     TypeName("OpenFOAMModel");
 
-    /// @brief RunTime selection table for OpenFOAMModels
+    // RunTime selection table for OpenFOAMModels
     declareRunTimeSelectionTable(autoPtr,
         OpenFOAMModel,
         dictionary,
         (const dictionary& dict),
         (dict));
 
-    /// Construct from dictionary
+    // Construct from dictionary
     explicit OpenFOAMModel(const dictionary& dict);
 
-    /// Delete move construct
+    // Delete move construct
     OpenFOAMModel(OpenFOAMModel&& other) = delete;
 
-    /// Delete default copy construct
+    // Delete default copy construct
     OpenFOAMModel(const OpenFOAMModel& other) = delete;
 
-    /// Destruct OpenFOAMModels
+    // Destruct OpenFOAMModels
     virtual ~OpenFOAMModel() { }
 
-    /// @returns A dynamic clone of this model
+    // @returns A dynamic clone of this model
     virtual autoPtr<OpenFOAMModel> clone() const = 0;
 
-    /// @returns the typename
+    // @returns the typename
     virtual word verifyType() const = 0;
 
-    /// @returns The concrete model from dictionary
-    /// as a pointer to base type
+    // @returns The concrete model from dictionary
+    // as a pointer to base type
     static autoPtr<OpenFOAMModel> New(const dictionary& dict);
 
-    /// @returns the configuration dictionary
+    // @returns the configuration dictionary
     const dictionary& dict() const
     {
         return dict_;
     }
 
-    /// @returns m
+    // @returns m member data
     T m() const
     {
         return m_;
     }
 
-    /// Deleted move assignment
+    // Deleted move assignment
     OpenFOAMModel& operator=(OpenFOAMModel&& other) = delete;
 
-    /// Deleted copy assignment
+    // Deleted copy assignment
     OpenFOAMModel& operator=(const OpenFOAMModel& other) = delete;
 };
 
-} /// !namespace Foam
+} // !namespace Foam
 
 #define makeRegularModel(SS, Type)                                             \
                                                                                \

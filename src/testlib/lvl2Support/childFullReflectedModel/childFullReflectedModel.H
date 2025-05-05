@@ -6,34 +6,33 @@
 
 namespace Foam {
 
-/// @brief a child model mimiking original OpenFOAM child models
-/// and keeping an optional subModel that participates in RTS
-/// @output_section author:elwardi
+// @brief a child model mimiking original OpenFOAM child models
+// and keeping an optional subModel that participates in RTS
 class childFullReflectedModel : public fullReflectedModel {
 protected:
 
-    /// submodel
+    // submodel
     autoPtr<basicReflectedModel> subModel_;
 
 public:
-    /// Runtime type name
+    // Runtime type name
     TypeName("childFullReflectedModel");
 
-    /// Construct from dictionary
+    // Construct from dictionary
     explicit childFullReflectedModel(const dictionary& dict);
 
-    /// Destruct childFullReflectedModels
+    // Destruct childFullReflectedModels
     virtual ~childFullReflectedModel() = default;
 
-    /// Update childFullReflectedModel
+    // Update childFullReflectedModel
     virtual autoPtr<fullReflectedModel> clone() const;
 
-    /// Verify type name
+    // Verify type name
     virtual word verifyType() const {
         return typeName;
     }
 
-    /// Befriend typeinfo for this class
+    // Befriend typeinfo for this class
     friend class refl_impl::metadata::type_info__<childFullReflectedModel>;
 };
 

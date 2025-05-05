@@ -15,20 +15,19 @@ namespace Foam {
 
 using Reflect::uiElement;
 
-/// @brief Base class taking advantage of uiElements
-/// @output_section author:elwardi
+// @brief Base class taking advantage of uiElements
 class fullReflectedModel {
 protected:
-    /// Configuration dictionary
+    // Configuration dictionary
     dictionary dict_;
 
-    /// optional model name
+    // optional model name
     uiElement<autoPtr<word>,
         withDefault(nullptr),
         withDescription("name of fullReflectedModel")
     > name_;
 
-    /// m coefficient
+    // m coefficient
     uiElement<label,
         withDefault(15),
         withDescription("m coefficient"),
@@ -36,13 +35,13 @@ protected:
         withMax(20)
     > m_;
 
-    /// vector
+    // vector
     uiElement<vector,
         withDefault((vector {1,0,0})),
         withDescription("model direction")
     > dir_;
 
-    /// HashTable of words, default set through a custom Lambda
+    // HashTable of words, default set through a custom Lambda
     uiElement<HashTable<word>,
         []() {
             HashTable<word> ht;
@@ -53,83 +52,83 @@ protected:
         withDescription("model hash table of words")
     > ht_;
 
-    /// A not-default-constructible member so not managed with uiElement
+    // A not-default-constructible member so not managed with uiElement
     OFstream ndc_;
 
 public:
-    /// Runtime type name
+    // Runtime type name
     TypeName("fullReflectedModel");
 
-    /// @brief RunTime selection table for fullReflectedModels
+    // @brief RunTime selection table for fullReflectedModels
     declareRunTimeSelectionTable(autoPtr,
         fullReflectedModel,
         dictionary,
         (const dictionary& dict),
         (dict));
 
-    /// @brief Schema table for fullReflectedModels
-    /// @param first argument is base class type
-    /// @param second argument is the schamfunction name from Reflect::reflect<T> (schema)
-    /// @param third argument is return type of the schema function (dictionary)
+    // @brief Schema table for fullReflectedModels
+    // @param first argument is base class type
+    // @param second argument is the schamfunction name from Reflect::reflect<T> (schema)
+    // @param third argument is return type of the schema function (dictionary)
     declareSchemaTable(fullReflectedModel, schema, dictionary, (const dictionary&));
 
-    /// Construct from dictionary
+    // Construct from dictionary
     explicit fullReflectedModel(const dictionary& dict);
 
-    /// Delete move construct
+    // Delete move construct
     fullReflectedModel(fullReflectedModel&& other) = delete;
 
-    /// Delete default copy construct
+    // Delete default copy construct
     fullReflectedModel(const fullReflectedModel& other) = delete;
 
-    /// Destruct fullReflectedModels
+    // Destruct fullReflectedModels
     virtual ~fullReflectedModel() { }
 
-    /// @returns A dynamic clone of this model
+    // @returns A dynamic clone of this model
     virtual autoPtr<fullReflectedModel> clone() const = 0;
 
-    /// @returns the typename
+    // @returns the typename
     virtual word verifyType() const = 0;
 
-    /// @returns The concrete model from dictionary
-    /// as a pointer to base type
+    // @returns The concrete model from dictionary
+    // as a pointer to base type
     static autoPtr<fullReflectedModel> New(const dictionary& dict);
 
-    /// @returns the configuration dictionary
+    // @returns the configuration dictionary
     const dictionary& dict() const
     {
         return dict_;
     }
 
-    /// @returns m
+    // @returns m
     label m() const
     {
         return m_;
     }
 
-    /// @returns ht
+    // @returns ht
     HashTable<word> ht() const
     {
         return ht_;
     }
 
-    /// @returns dir
+    // @returns dir
     vector dir() const
     {
         return dir_;
     }
 
-    /// Deleted move assignment
+    // Deleted move assignment
     fullReflectedModel& operator=(fullReflectedModel&& other) = delete;
 
-    /// Deleted copy assignment
+    // Deleted copy assignment
     fullReflectedModel& operator=(const fullReflectedModel& other) = delete;
 
-    /// Befriend typeinfo struct from reflection  backend
+    // Befriend typeinfo struct from reflection  backend
     friend class refl_impl::metadata::type_info__<fullReflectedModel>;
 };
 
-} /// !namespace Foam
+} // !namespace Foam
 
 REFL_AUTO(type(Foam::fullReflectedModel),
           field(name_),

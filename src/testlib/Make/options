@@ -2,7 +2,6 @@ EXE_INC = $(DEBUG_FLAGS) \
     -std=c++23 \
     -I../lnInclude \
     -I$(LIB_SRC)/surfMesh/lnInclude \
-    -I$(LIB_SRC)/Pstream/lnInclude \
     -I$(_REPO_ROOT)/src/lnInclude \
     -I$(FOAM_USER_LIBBIN)/catch2/include
 

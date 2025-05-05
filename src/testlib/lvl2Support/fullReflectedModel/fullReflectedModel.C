@@ -43,4 +43,4 @@ fullReflectedModel::New(
     return autoPtr<fullReflectedModel>(cstrIter()(dict));
 }
 
-} /// !namespace Foam
+} // !namespace Foam

@@ -5,36 +5,35 @@
 
 namespace Foam {
 
-/// @brief a child model mimiking original OpenFOAM child models
-/// and keeping an optional subModel that participates in RTS
-/// @output_section author:elwardi
+// @brief a child model mimiking original OpenFOAM child models
+// and keeping an optional subModel that participates in RTS
 class child1BasicReflectedModel : public basicReflectedModel {
 protected:
-    /// Optional sub-model to prevent infinite recursion
+    // Optional sub-model to prevent infinite recursion
     autoPtr<basicReflectedModel> subModel_;
 
-    /// A scalar Coefficient
+    // A scalar Coefficient
     scalar k_;
 
 public:
-    /// Runtime type name
+    // Runtime type name
     TypeName("child1BasicReflectedModel");
 
-    /// Construct from dictionary
+    // Construct from dictionary
     explicit child1BasicReflectedModel(const dictionary& dict);
 
-    /// Destruct child1BasicReflectedModels
+    // Destruct child1BasicReflectedModels
     virtual ~child1BasicReflectedModel() = default;
 
-    /// Update child1BasicReflectedModel
+    // Update child1BasicReflectedModel
     virtual autoPtr<basicReflectedModel> clone() const;
 
-    /// Verify type name
+    // Verify type name
     virtual word verifyType() const {
         return typeName;
     }
 
-    /// Befriend typeinfo for this class
+    // Befriend typeinfo for this class
     friend class refl_impl::metadata::type_info__<child1BasicReflectedModel>;
 };
 

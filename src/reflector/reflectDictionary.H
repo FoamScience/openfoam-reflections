@@ -21,12 +21,11 @@
 
 namespace Foam {
 
-/// @output_section author:elwardi
 namespace Reflect {
 
 struct _detail {
-    /// @brief A function to return a familiar name from a C++ type name
-    /// @return A human-readable string representing the type
+    // @brief A function to return a familiar name from a C++ type name
+    // @return A human-readable string representing the type
     static word familiarNaming(word name) {
         HashTable<word> map;
         map.insert(
@@ -39,10 +38,10 @@ struct _detail {
         return name;
     }
 
-    /// @brief A function to demangle types from typeid.
-    /// Only compiled for Gcc, other compilers will display mangled names
-    /// @return demangled type name if compiled with GCC-compatible compilers,
-    /// else, the mangled type name
+    // @brief A function to demangle types from typeid.
+    // Only compiled for Gcc, other compilers will display mangled names
+    // @return demangled type name if compiled with GCC-compatible compilers,
+    // else, the mangled type name
     static word demangle(const char* name) {
 #ifdef __GNUG__
         int status = -4;
@@ -58,10 +57,10 @@ struct _detail {
 template <class WrappedType> struct wrapAbstract;
 template <class WrappedType> struct wrapImpl;
 
-/// @brief Utilities for generating skeleton dictionaries for classes
+// @brief Utilities for generating skeleton dictionaries for classes
 template <class T, bool Constructible = false>
 struct reflect {
-    /// @brief Get member value as string for construction purposes
+    // @brief Get member value as string for construction purposes
     static void memberConstructibleValue(dictionary& skeleton, word key) {
         OStringStream oss;
         // Here UI members get max attention. Pointers to stuff will behave
@@ -94,9 +93,9 @@ struct reflect {
         }
     }
 
-    /// @brief Formats the list of registered RTS options  for a
-    /// dictionary-based RTS model
-    /// @return A string, listing available RTS options
+    // @brief Formats the list of registered RTS options  for a
+    // dictionary-based RTS model
+    // @return A string, listing available RTS options
     template <DictionaryRTSModelBase U>
     static word getRTSOptions() {
         // TODO: maybe use a better seperator than whitespace?
@@ -108,8 +107,8 @@ struct reflect {
         return options;
     }
 
-    /// @brief Get a list of registered RTS options
-    /// @return a vector of RTS options as strings
+    // @brief Get a list of registered RTS options
+    // @return a vector of RTS options as strings
     template <DictionaryRTSModelBase U>
     static std::vector<string> getRTSOptionsArray() {
         std::vector<string> opts{""};
@@ -119,10 +118,10 @@ struct reflect {
         return opts;
     }
 
-    /// @brief A static method to add an entry for a single "member", concrete
-    /// logic is handled by concept-based specialization of this method
-    /// @return the passed-in skeleton dict with added entries for memebr of
-    /// type T
+    // @brief A static method to add an entry for a single "member", concrete
+    // logic is handled by concept-based specialization of this method
+    // @return the passed-in skeleton dict with added entries for memebr of
+    // type T
     static dictionary& memberSchema(dictionary& skeleton,
                                     const word& memberKey,
                                     const dictionary& config) {
@@ -159,17 +158,17 @@ struct reflect {
         return skeleton;
     }
 
-    /// @brief A function to build a dictionary/JSON from reflected class
-    /// members
-    /// @param config: A configuration dictionary to specify concrete models for
+    // @brief A function to build a dictionary/JSON from reflected class
+    // members
+    // @param config: A configuration dictionary to specify concrete models for
     static dictionary schema(const dictionary& config) {
-        /// Format member names, which are assumed to end with an underscore
+        // Format member names, which are assumed to end with an underscore
         auto processKey = [](word key) {
             key.removeEnd('_');
             return key;
         };
 
-        /// the dictionary hosting the required entries
+        // the dictionary hosting the required entries
         dictionary skeleton;
 
         using pureTypeName = std::remove_cvref_t<T>;
@@ -198,7 +197,7 @@ struct reflect {
             }
         }
 
-        /// TODO: maybe extract this bit into a templated function
+        // TODO: maybe extract this bit into a templated function
         if constexpr (WrapperDictionaryRTSBase<pureTypeName>) {
             using wrappedType = pureTypeName::wrappedType;
             word typeKey(wrappedType::typeName + "Type");
@@ -337,22 +336,22 @@ struct reflect<T, Constructible> {
 
 template <class WrappedType>
 struct wrapAbstract : public WrappedType {
-    /// @brief The type to be wrapped for reflection
+    // @brief The type to be wrapped for reflection
     using wrappedType = WrappedType;
 
-    /// delegate typename
+    // delegate typename
     TypeName(WrappedType::typeName_());
 
-    /// Generic schema table
+    // Generic schema table
     declareSchemaTable(wrapAbstract, schema, dictionary, (const dictionary&));
 
-    /// Construct from dictionary
+    // Construct from dictionary
     explicit wrapAbstract(const dictionary& dict);
 
-    /// Destruct wrapperModels
+    // Destruct wrapperModels
     virtual ~wrapAbstract() {}
 
-    /// Befriend typeinfo struct from reflection backend
+    // Befriend typeinfo struct from reflection backend
     //friend class refl_impl::metadata::type_info__<WrappedType>;
     friend class refl_impl::metadata::type_info__<wrapAbstract<WrappedType>>;
 };
@@ -360,16 +359,16 @@ struct wrapAbstract : public WrappedType {
 template <class WrappedType>
 struct wrapImpl : public wrapAbstract<WrappedType> {
 
-    /// delegate typename
+    // delegate typename
     TypeName(WrappedType::typeName_());
 
-    /// Construct from dictionary
+    // Construct from dictionary
     explicit wrapImpl(const dictionary& dict);
 
-    /// Destruct wrapperModels
+    // Destruct wrapperModels
     virtual ~wrapImpl() {}
 
-    /// Befriend typeinfo struct from reflection backend
+    // Befriend typeinfo struct from reflection backend
     //friend class refl_impl::metadata::type_info__<WrappedType>;
     friend class refl_impl::metadata::type_info__<wrapImpl<WrappedType>>;
 };

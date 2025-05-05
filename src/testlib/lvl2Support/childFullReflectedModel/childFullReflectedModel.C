@@ -19,4 +19,4 @@ autoPtr<fullReflectedModel> childFullReflectedModel::clone() const
     return nullptr;
 }
 
-} /// !namespace Foam
+} // !namespace Foam

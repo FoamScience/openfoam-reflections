@@ -5,50 +5,49 @@
 
 namespace Foam {
 
-/// @brief Base class mimiking a standard OpenFOAM model
-/// with no reflection support what's so ever
-/// @output_section author:elwardi
+// @brief Base class mimiking a standard OpenFOAM model
+// with no reflection support what's so ever
 template<class T>
 class childOpenFOAMModel : public OpenFOAMModel<T> {
 protected:
     // list of T items
     List<T> list_;
 
-    // child-specific dictionary 
+    // child-specific dictionary that is not really needed
     dictionary someDict_;
 
 public:
-    /// Runtime type name
+    // Runtime type name
     TypeName("childOpenFOAMModel");
 
-    /// Construct from dictionary
+    // Construct from dictionary
     explicit childOpenFOAMModel(const dictionary& dict);
 
-    /// Delete move construct
+    // Delete move construct
     childOpenFOAMModel(childOpenFOAMModel&& other) = delete;
 
-    /// Delete default copy construct
+    // Delete default copy construct
     childOpenFOAMModel(const childOpenFOAMModel& other) = delete;
 
-    /// Destruct childOpenFOAMModels
+    // Destruct childOpenFOAMModels
     virtual ~childOpenFOAMModel() { }
 
-    /// @returns A dynamic clone of this model
+    // @returns A dynamic clone of this model
     virtual autoPtr<OpenFOAMModel<T>> clone() const { return nullptr; }
 
-    /// @returns the typename
+    // @returns the typename
     virtual word verifyType() const {
         return typeName_();
     }
 
-    /// Deleted move assignment
+    // Deleted move assignment
     childOpenFOAMModel& operator=(childOpenFOAMModel&& other) = delete;
 
-    /// Deleted copy assignment
+    // Deleted copy assignment
     childOpenFOAMModel& operator=(const childOpenFOAMModel& other) = delete;
 };
 
-} /// !namespace Foam
+} // !namespace Foam
 
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //

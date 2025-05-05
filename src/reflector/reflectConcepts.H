@@ -9,14 +9,13 @@
 
 namespace Foam {
 
-/// @output_section author:elwardi
 namespace Reflect {
 
-/// @brief An alias to backend type list implementation
+// @brief An alias to backend type list implementation
 template <class... Ts> using typeList = refl::util::type_list<Ts...>;
 
-/// @brief A trait for function pointers. Stolen off [this stackoverflow.com
-/// answer](https://stackoverflow.com/questions/77210519/writing-a-c-concept-for-a-type-with-static-member-function-whose-arguments-sta/77214808#77214808)
+// @brief A trait for function pointers. Stolen off [this stackoverflow.com
+// answer](https://stackoverflow.com/questions/77210519/writing-a-c-concept-for-a-type-with-static-member-function-whose-arguments-sta/77214808#77214808)
 template <typename> struct fnPtrTraits;
 
 template <typename R, typename... Ps> struct fnPtrTraits<R (*)(Ps...)> {
@@ -30,8 +29,8 @@ struct fnPtrTraits<R (*)(Ps...) noexcept> : fnPtrTraits<R (*)(Ps...)> {
     static constexpr bool isNoexcept = true;
 };
 
-/// @brief An internal concept for having a typeName and a
-/// dictionaryConstructorTablePtr.
+// @brief An internal concept for having a typeName and a
+// dictionaryConstructorTablePtr.
 template <class T>
 concept DictionaryRTSModel = requires {
     { T::typeName } -> std::convertible_to<word>;
@@ -40,12 +39,12 @@ concept DictionaryRTSModel = requires {
     } -> std::convertible_to<typename T::dictionaryConstructorTableType>;
 };
 
-/// @brief A concept for base classes for RTS models which implement a
-/// dictionary-based RTS and satisfies the following conditions:
-/// - Is an abstract type
-/// - Has a static New method which takes a dictionary as its first argument
-/// @note For thisto work ::New static method for type T must have a dictionaty
-/// as Its first argument, and never be overloaded...
+// @brief A concept for base classes for RTS models which implement a
+// dictionary-based RTS and satisfies the following conditions:
+// - Is an abstract type
+// - Has a static New method which takes a dictionary as its first argument
+// @note For thisto work ::New static method for type T must have a dictionaty
+// as Its first argument, and never be overloaded...
 template <class T>
 concept DictionaryRTSModelBase = requires {
     requires DictionaryRTSModel<T>;
@@ -58,10 +57,10 @@ concept DictionaryRTSModelBase = requires {
     std::is_abstract_v<T>;
 };
 
-/// @brief A concept for concrete implementations of RTS Models to make sure a
-/// type
-/// - Is NOT abstract
-/// - Its base class participates dictioanry-based RTS
+// @brief A concept for concrete implementations of RTS Models to make sure a
+// type
+// - Is NOT abstract
+// - Its base class participates dictioanry-based RTS
 template <class T, class B>
 concept DictionaryRTSModelImpl = requires {
     std::is_abstract_v<T> == false;
@@ -69,14 +68,14 @@ concept DictionaryRTSModelImpl = requires {
     requires DictionaryRTSModelBase<T>;
 };
 
-/// @brief A concept for classes supporting self-reflection capabilities.
+// @brief A concept for classes supporting self-reflection capabilities.
 template <class T>
 concept SelfReflectableModel = requires(word w) {
     { T::schema(w) } -> std::convertible_to<dictionary>;
 };
 
-/// @brief An innacurate convert for OpenFOAM pointers.
-/// @todo incomplete concept
+// @brief An innacurate convert for OpenFOAM pointers.
+// @todo incomplete concept
 template <class T>
 concept SomePtr = requires(T t) {
     { t.ref() };
@@ -84,8 +83,8 @@ concept SomePtr = requires(T t) {
     { t.ptr() };
 };
 
-/// @brief A concept for class members which get maximum support
-/// from the reflection system
+// @brief A concept for class members which get maximum support
+// from the reflection system
 template <typename T>
 concept UIElement = requires {
     typename T::valueType;
@@ -94,23 +93,23 @@ concept UIElement = requires {
     { T::descr() } -> std::convertible_to<std::string_view>;
 };
 
-/// @brief A concept for class members which get maximum support
-/// from the reflection system that come with a minimal value
+// @brief A concept for class members which get maximum support
+// from the reflection system that come with a minimal value
 template <typename T>
 concept UIElementWithMin = requires {
     UIElement<T>;
     { T::min() } -> std::convertible_to<typename T::valueType>;
 };
 
-/// @brief A concept for class members which get maximum support
-/// from the reflection system that come with a maximal value
+// @brief A concept for class members which get maximum support
+// from the reflection system that come with a maximal value
 template <typename T>
 concept UIElementWithMax = requires {
     UIElement<T>;
     { T::max() } -> std::convertible_to<typename T::valueType>;
 };
 
-/// @brief A concept for wrappers of RTS classes
+// @brief A concept for wrappers of RTS classes
 template <typename T>
 concept WrapperDictionaryRTSBase = requires {
     DictionaryRTSModelBase<typename T::wrappedType>;
@@ -121,7 +120,7 @@ concept WrapperDictionaryRTSImpl = requires {
 };
 
 
-/// @breif A concept for non-reflectable types
+// @breif A concept for non-reflectable types
 template <typename T>
 concept Reflectable = SomePtr<T> || refl::trait::is_reflectable_v<T>;
 

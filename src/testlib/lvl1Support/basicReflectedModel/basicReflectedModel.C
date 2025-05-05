@@ -39,4 +39,4 @@ basicReflectedModel::New(
     return autoPtr<basicReflectedModel>(cstrIter()(dict));
 }
 
-} /// !namespace Foam
+} // !namespace Foam
