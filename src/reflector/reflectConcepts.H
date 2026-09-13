@@ -41,19 +41,20 @@ concept DictionaryRTSModel = requires {
 };
 
 /// @brief A concept for base classes for RTS models which implement a
-/// dictionary-based RTS and satisfies the following conditions:
+/// dictionary-based RTS (an OpenFOAM `dictionaryConstructorTablePtr_`
+/// selector table, named per OpenFOAM convention) and satisfies:
 /// - Is an abstract type
-/// - Has a static New method which takes a dictionary as its first argument
-/// @note For thisto work ::New static method for type T must have a dictionaty
-/// as Its first argument, and never be overloaded...
+/// - Has a static New factory method returning autoPtr<T>
+/// @note New's parameter list is intentionally unconstrained here: OpenFOAM
+/// RTS conventions vary (some New()s take a dictionary directly, others take
+/// e.g. (Time&, word&, word& modelType) and read their own dictionary
+/// internally) - the selector table (dictionaryConstructorTablePtr_) is what
+/// matters for schema/RTS-option enumeration, never be overloaded...
 template <class T>
 concept DictionaryRTSModelBase = requires {
     requires DictionaryRTSModel<T>;
-    []<typename Traits, typename R = Traits::resultType,
-       typename Ps = Traits::paramsType>(Traits)
-        requires std::same_as<R, autoPtr<T>> && (typeList<Ps>::size > 0) &&
-                 std::same_as<std::remove_cvref_t<refl::trait::get_t<0, Ps>>,
-                              dictionary>
+    []<typename Traits, typename R = Traits::resultType>(Traits)
+        requires std::same_as<R, autoPtr<T>>
     {}(fnPtrTraits<decltype(&T::New)>{});
     std::is_abstract_v<T>;
 };
