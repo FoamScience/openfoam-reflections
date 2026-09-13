@@ -73,6 +73,13 @@ struct uiElement {
 
     /// @brief convert to T
     operator T() const { return v; }
+
+    /// @brief assign a plain value, e.g. for members re-read from a
+    /// dictionary at runtime (adjustable time-stepping and similar)
+    uiElement& operator=(const T &val) {
+        v = val;
+        return *this;
+    }
 };
 
 #define withDefault(initExpr) []() { return initExpr; }
