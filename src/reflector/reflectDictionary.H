@@ -223,6 +223,25 @@ struct reflect {
         });
         return skeleton;
     }
+
+    /// @brief Enumerate the schema of every concrete type that has been
+    /// reflection-converted for this RTS family (registered via
+    /// addToSchemaTable), keyed by type name. Types only present in the
+    /// plain RTS table (not yet reflection-converted) are skipped rather
+    /// than crashed on - lets a family be rolled out incrementally.
+    static dictionary allSchemas(const dictionary& baseConfig = dictionary::null)
+        requires DictionaryRTSModelBase<T>
+    {
+        dictionary result;
+        word typeKey(T::typeName + "Type");
+        for (const word& name : T::schemasPtr_->toc()) {
+            if (name.ends_with("Construct")) continue;
+            dictionary config(baseConfig);
+            config.set(typeKey, name);
+            result.set(name, schema(config));
+        }
+        return result;
+    }
 };
 
 // @brief Specialization of member schema for pointer types
