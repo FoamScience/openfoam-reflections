@@ -65,9 +65,37 @@ namespace Foam {
         }                                                                      \
     }
 
+/* Same as defineSchemaTable, but for a specific instantiation of a class  */
+/* template (e.g. accelerationModel<scalar>) - defining members of one    */
+/* instantiation out-of-line is an explicit specialization, which GCC     */
+/* requires a leading "template<>" for. */
+#define defineTemplateSchemaTable(baseType)                                    \
+    template<>                                                                 \
+    baseType::schemaTable *baseType::schemasPtr_(nullptr);                     \
+    template<>                                                                 \
+    void baseType::constructSchemaTables() {                                   \
+        if (baseType::schemasPtr_ == nullptr) {                                \
+            baseType::schemasPtr_ = new baseType::schemaTable;                 \
+        }                                                                      \
+    }                                                                          \
+    template<>                                                                 \
+    void baseType::destroySchemaTables() {                                     \
+        if (baseType::schemasPtr_) {                                           \
+            delete baseType::schemasPtr_;                                      \
+            baseType::schemasPtr_ = nullptr;                                   \
+        }                                                                      \
+    }
+
+#define reflectTokenPasteImpl(x, y) x##y
+#define reflectTokenPaste(x, y) reflectTokenPasteImpl(x, y)
+
+/* childType may be a template-id (e.g. fixedRelaxation<scalar>), which is  */
+/* several preprocessor tokens - can't paste it into an identifier. Name   */
+/* the table entry off __LINE__ instead; uniqueness only needs one call    */
+/* per line, true for every existing and template use. */
 #define addToSchemaTable(baseType, childType)                                  \
-    baseType::addSchemaToTable<childType> add##childType##SchemaToSchemaTable( \
-        childType::typeName)
+    baseType::addSchemaToTable<childType>                                      \
+        reflectTokenPaste(addSchemaToSchemaTable_, __LINE__)(childType::typeName)
 
 } // namespace Foam
 
