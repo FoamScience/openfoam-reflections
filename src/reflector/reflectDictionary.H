@@ -229,8 +229,14 @@ struct reflect {
     /// addToSchemaTable), keyed by type name. Types only present in the
     /// plain RTS table (not yet reflection-converted) are skipped rather
     /// than crashed on - lets a family be rolled out incrementally.
+    /// @note Only needs T::typeName/T::schemasPtr_, so the constraint is
+    /// just "has a schema table" - NOT the fuller DictionaryRTSModelBase<T>
+    /// (that also demands a matching dictionaryConstructorTablePtr_ under
+    /// that exact name, which some RTS bases never have - e.g. bases whose
+    /// declareRunTimeSelectionTable tag isn't literally "dictionary", such
+    /// as regionInterfaceType's "IOdictionary" tag).
     static dictionary allSchemas(const dictionary& baseConfig = dictionary::null)
-        requires DictionaryRTSModelBase<T>
+        requires requires { T::schemasPtr_; }
     {
         dictionary result;
         word typeKey(T::typeName + "Type");
