@@ -1,6 +1,11 @@
 #ifndef reflectionSchemaTable_H
 #define reflectionSchemaTable_H
 
+// refl.H's built-in std::exception/basic_string/tuple/... reflection
+// metadata uses an attribute tag named 'debug', ambiguous with OpenFOAM's
+// own pervasive Foam::debug. Must be defined before refl.H's FIRST
+// inclusion in a translation unit - see also reflectConcepts.H.
+#define REFL_NO_STD_SUPPORT
 #include "refl.H"
 #include "reflectConcepts.H"
 #include "reflectDictionary.H"

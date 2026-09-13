@@ -3,6 +3,12 @@
 
 #include "autoPtr.H"
 #include "dictionary.H"
+
+// refl.H's built-in std::exception/basic_string/tuple/... reflection
+// metadata uses an attribute tag named 'debug', which is ambiguous with
+// OpenFOAM's own pervasive Foam::debug once OpenFOAM headers are in scope.
+// Not needed by anything here - none of our reflected types are std types.
+#define REFL_NO_STD_SUPPORT
 #include "refl.H"
 #include <string_view>
 #include <type_traits>
